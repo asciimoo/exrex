@@ -55,13 +55,7 @@ def _p(d, append=False):
                 for k,_ in enumerate(ret):
                     ret[k] += chr(i[1])
         elif i[0] == 'subpattern':
-            for sub in i[1:]:
-                tmp_ret = []
-                for piece in _p(list(sub[1])):
-                    for k,_ in enumerate(ret):
-                        tmp_ret.append(ret[k]+piece)
-                if len(tmp_ret):
-                    ret = tmp_ret
+            ret = [r+piece for sub in i[1:] for piece in _p(list(sub[1])) for r in ret]
         elif i[0] == 'in':
             ret = [r+piece for piece in _p(list(i[1]), True) for r in ret]
         elif i[0] == 'range':
@@ -88,11 +82,7 @@ def _p(d, append=False):
 
     if len(ranges):
         if len(ret) and ret[0] != '':
-            tmp_ret = []
-            for char in ranges:
-                for k,_ in enumerate(ret):
-                    tmp_ret.append(ret[k]+char)
-            ret = tmp_ret
+            ret = [r+char for char in ranges for r in ret]
         else:
             ret = ranges
     #print ret
@@ -102,7 +92,7 @@ def _p(d, append=False):
 def parse(s):
     """docstring for parse"""
     r = sre_parse.parse(s)
-    # print r
+    #print r
     return _p(list(r))
 
 
@@ -137,7 +127,10 @@ def __main__():
     # '.?'
     args = argparser()
     for s in parse(args['regex']):
-        args['output'].write(s+args['delimiter'])
+        try:
+            args['output'].write(s+args['delimiter'])
+        except:
+            break
 
 if __name__ == '__main__':
     __main__()
