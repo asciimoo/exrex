@@ -3,7 +3,7 @@ EXREX
 
 ### Description
 
-Exrex is a tool that generates all matching strings to a given regular expression.
+Exrex is a tool and python module that generates all matching strings to a given regular expression.
 
 ### Command line usage
 
@@ -31,15 +31,17 @@ Example:
 
 ```python
 >>> import exrex
->>> exrex.parse('[ab]{1,3}')
+>>> [x for x in exrex.parse('((hai){2}|world)!')]
+['haihai!', 'world!']
+>>> [x for x in exrex.parse('[ab]{1,3}')]
 ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
 ```
 
 ### TODO
 
- * Memory usage reduction (!generators!)
- * Count the number of matching strings
- * Command line switches to change default character sets/ranges (eg. for '.','\s'..)
+ * Memory usage reduction (!generators!) (80%)
+ * Count the number of matching strings (0%)
+ * Command line switches to change default character sets/ranges (eg. for '.','\s'..) (0%)
 
 
 ### License
