@@ -30,28 +30,9 @@ optional arguments:
 Example:
 
 ```python
-import exrex
-
-print exrex.parse('[ab]{1, 3}')
-```
-
-Example output:
-
-```
-a
-b
-aa
-ab
-ba
-bb
-aaa
-aab
-aba
-abb
-baa
-bab
-bba
-bbb
+>>> import exrex
+>>> exrex.parse('[ab]{1,3}')
+['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
 ```
 
 ### TODO
