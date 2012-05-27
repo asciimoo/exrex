@@ -3,7 +3,7 @@ EXREX
 
 ### Description
 
-Exrex is a tool that generates all matching string to a given regular expression.
+Exrex is a tool that generates all matching strings to a given regular expression.
 
 ### Command line usage
 

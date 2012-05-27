@@ -40,11 +40,7 @@ def _p(d, append=False):
     for i in d:
         if len(ranges) and i[0] != 'range':
             if len(ret):
-                tmp_ret = []
-                for char in ranges:
-                    for k,_ in enumerate(ret):
-                        tmp_ret.append(ret[k]+char)
-                ret = tmp_ret
+                ret = [r+char for char in ranges for r in ret]
             else:
                 ret = ranges
             ranges = []
@@ -67,15 +63,10 @@ def _p(d, append=False):
                 if len(tmp_ret):
                     ret = tmp_ret
         elif i[0] == 'in':
-            tmp_ret = []
-            for piece in _p(list(i[1]), True):
-                for k,_ in enumerate(ret):
-                    tmp_ret.append(ret[k]+piece)
-            ret = tmp_ret
+            ret = [r+piece for piece in _p(list(i[1]), True) for r in ret]
         elif i[0] == 'range':
             ranges.extend(map(chr, range(i[1][0], i[1][1]+1)))
         elif i[0] == 'max_repeat':
-            tmp_ret = []
             chars = [x for x in _p(list(i[1][2])) if x != '']
             ret = [r+''.join(piece) for rep in range(i[1][0], i[1][1]+1) for piece in product(*repeat(chars, rep)) for r in ret]
             # tmp_ret = []
