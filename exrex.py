@@ -32,61 +32,60 @@ def _p(d, append=False):
     ranges = ['']
     if not isinstance(d, list):
         print '[!] not a list: %r' % d
-        return []
+        yield None
     if not len(d):
         print '[!] empty list'
-        return []
+        yield None
     l = ''
     for i in d:
         if len(ranges) and i[0] != 'range':
             if len(ret):
-                ret = [r+char for char in ranges for r in ret]
+                ret = (r+char for r in ret for char in ranges)
             else:
                 ret = ranges
             ranges = []
 
         if i[0] == 'literal':
+            # TODO
             if append:
                 if ret[0] == '':
                     ret[0] = chr(i[1])
                 else:
                     ret.append(chr(i[1]))
             else:
-                for k,_ in enumerate(ret):
-                    ret[k] += chr(i[1])
+                c = chr(i[1])
+                ret = [r+c for r in ret]
         elif i[0] == 'subpattern':
-            ret = [r+piece for sub in i[1:] for piece in _p(list(sub[1])) for r in ret]
+            l = i[1:]
+            ret = (r+piece for r in ret for sub in l for piece in _p(list(sub[1])))
         elif i[0] == 'in':
-            ret = [r+piece for piece in _p(list(i[1]), True) for r in ret]
+            l = list(i[1])
+            ret = (r+''.join(piece) for r in ret for piece in _p(l, True))
         elif i[0] == 'range':
             ranges.extend(map(chr, range(i[1][0], i[1][1]+1)))
         elif i[0] == 'max_repeat':
             chars = [x for x in _p(list(i[1][2])) if x != '']
-            ret = [r+''.join(piece) for rep in range(i[1][0], i[1][1]+1) for piece in product(*repeat(chars, rep)) for r in ret]
-            # tmp_ret = []
-            # for piece in _p(list(i[1][2])):
-            #     for rep in range(i[1][0], i[1][1]+1):
-            #         for r in ret:
-            #             tmp_ret.append(r+piece*rep)
-            # ret = tmp_ret
+            ran = (i[1][0], i[1][1]+1)
+            ret = (r+''.join(piece) for r in ret for rep in range(*ran) for piece in product(*repeat(chars, rep)))
         elif i[0] == 'category':
             cat = CATEGORIES.get(i[1], [''])
-            ret = [r+c for r in ret for c in cat]
+            ret = (r+c for r in ret for c in cat)
         elif i[0] == 'branch':
             subs = []
-            for piece in [_p(list(x)) for x in i[1][1]]:
+            for piece in (_p(list(x)) for x in i[1][1]):
                 subs.extend(piece)
-            ret = [r+s for r in ret for s in subs]
+            ret = (r+s for r in ret for s in subs)
         elif i[0] == 'any':
-            ret = [r+c for c in CATEGORIES['category_any'] for r in ret]
+            ret = (r+c for r in ret for c in CATEGORIES['category_any'])
 
     if len(ranges):
         if len(ret) and ret[0] != '':
-            ret = [r+char for char in ranges for r in ret]
+            ret = (r+char for r in ret for char in ranges)
         else:
             ret = ranges
     #print ret
-    return ret
+    for r in ret:
+        yield r
 
 
 def parse(s):
