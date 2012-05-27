@@ -39,7 +39,7 @@ Example:
 
 ### TODO
 
- * Memory usage reduction (!generators!) (80%)
+ * Memory usage reduction (!generators!) (70%)
  * Count the number of matching strings (0%)
  * Command line switches to change default character sets/ranges (eg. for '.','\s'..) (0%)
 

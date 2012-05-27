@@ -28,8 +28,8 @@ CATEGORIES = {'category_space'  : sre_parse.WHITESPACE
 def _p(d, append=False):
     """docstring for _p"""
     #print d
-    ret =[]
-    ranges = ['']
+    ret = ['']
+    ranges = []
     if not isinstance(d, list):
         print '[!] not a list: %r' % d
         yield None
@@ -64,9 +64,10 @@ def _p(d, append=False):
         elif i[0] == 'range':
             ranges.extend(map(chr, range(i[1][0], i[1][1]+1)))
         elif i[0] == 'max_repeat':
+            tmp_ret = list(ret)
             chars = [x for x in _p(list(i[1][2])) if x != '']
             ran = (i[1][0], i[1][1]+1)
-            ret = (r+''.join(piece) for r in ret for rep in range(*ran) for piece in product(*repeat(chars, rep)))
+            ret = (r+''.join(piece) for r in tmp_ret for rep in range(*ran) for piece in product(*repeat(chars, rep)))
         elif i[0] == 'category':
             cat = CATEGORIES.get(i[1], [''])
             ret = (r+c for r in ret for c in cat)
@@ -91,7 +92,7 @@ def _p(d, append=False):
 def parse(s):
     """docstring for parse"""
     r = sre_parse.parse(s)
-    #print r
+    print r
     return _p(list(r))
 
 
