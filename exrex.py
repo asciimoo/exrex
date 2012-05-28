@@ -18,7 +18,7 @@
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 from re import sre_parse
-from itertools import product, repeat
+from itertools import product, imap, chain
 
 CATEGORIES = {'category_space'  : sre_parse.WHITESPACE
              ,'category_digit'  : sre_parse.DIGITS
@@ -62,19 +62,17 @@ def _p(d, append=False):
             l = list(i[1])
             ret = (r+''.join(piece) for r in ret for piece in _p(l, True))
         elif i[0] == 'range':
-            ranges.extend(map(chr, range(i[1][0], i[1][1]+1)))
+            ranges.extend(imap(chr, xrange(i[1][0], i[1][1]+1)))
         elif i[0] == 'max_repeat':
             tmp_ret = list(ret)
-            chars = [x for x in _p(list(i[1][2])) if x != '']
-            ran = (i[1][0], i[1][1]+1)
-            ret = (r+''.join(piece) for r in tmp_ret for rep in range(*ran) for piece in product(*repeat(chars, rep)))
+            chars = filter(None, _p(list(i[1][2])))
+            ran = range(i[1][0], i[1][1]+1)
+            ret = (r+''.join(piece) for r in tmp_ret for rep in ran for piece in product(chars, repeat=rep))
         elif i[0] == 'category':
             cat = CATEGORIES.get(i[1], [''])
             ret = (r+c for r in ret for c in cat)
         elif i[0] == 'branch':
-            subs = []
-            for piece in (_p(list(x)) for x in i[1][1]):
-                subs.extend(piece)
+            subs = chain.from_iterable(_p(list(x)) for x in i[1][1])
             ret = (r+s for r in ret for s in subs)
         elif i[0] == 'any':
             ret = (r+c for r in ret for c in CATEGORIES['category_any'])
