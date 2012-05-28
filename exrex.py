@@ -65,7 +65,7 @@ def _p(d, append=False):
             ranges.extend(imap(chr, xrange(i[1][0], i[1][1]+1)))
         elif i[0] == 'max_repeat':
             tmp_ret = list(ret)
-            chars = [x for x in _p(list(i[1][2])) if x != '']
+            chars = filter(None, _p(list(i[1][2])))
             ran = (i[1][0], i[1][1]+1)
             ret = (r+''.join(piece) for r in tmp_ret for rep in range(*ran) for piece in product(*repeat(chars, rep)))
         elif i[0] == 'category':
