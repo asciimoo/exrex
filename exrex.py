@@ -18,75 +18,63 @@
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 from re import sre_parse
-from itertools import product, repeat
+from itertools import product, imap, chain
 
 CATEGORIES = {'category_space'  : sre_parse.WHITESPACE
              ,'category_digit'  : sre_parse.DIGITS
              ,'category_any'    : [chr(x) for x in range(32, 123)]
              }
 
-def _p(d, append=False):
-    """docstring for _p"""
-    #print d
-    ret = ['']
-    ranges = []
-    if not isinstance(d, list):
-        print '[!] not a list: %r' % d
-        yield None
-    if not len(d):
-        print '[!] empty list'
-        yield None
-    l = ''
-    for i in d:
-        if len(ranges) and i[0] != 'range':
-            if len(ret):
-                ret = (r+char for r in ret for char in ranges)
-            else:
-                ret = ranges
-            ranges = []
+def comb(g, i):
+    g2 = list(i)
+    for c in g:
+        for c2 in g2:
+            yield c+c2
 
-        if i[0] == 'literal':
-            # TODO
-            if append:
-                if ret[0] == '':
-                    ret[0] = chr(i[1])
-                else:
-                    ret.append(chr(i[1]))
-            else:
-                c = chr(i[1])
-                ret = [r+c for r in ret]
+def mappend(g, c):
+    for cc in g:
+        yield cc+c
+
+def _in(d):
+    ret = []
+    for i in d:
+        if i[0] == 'range':
+            ret.extend(imap(chr, range(i[1][0], i[1][1]+1)))
+        elif i[0] == 'literal':
+            ret.append(chr(i[1]))
+    return ret
+
+def _p(d):
+    """docstring for _p"""
+    ret = ['']
+    params = []
+    index = -1
+    for i in d:
+        index+=1
+        if i[0] == 'in':
+            ret = comb(ret, _in(i[1]))
+        elif i[0] == 'literal':
+            ret = mappend(ret, chr(i[1]))
+        elif i[0] == 'category':
+            ret = comb(ret, CATEGORIES.get(i[1], ['']))
+        elif i[0] == 'any':
+            ret = comb(ret, CATEGORIES['category_any'])
+        elif i[0] == 'max_repeat':
+            #TODO !! t_ret
+            t_ret = list(ret)
+            chars = filter(None, _p(list(i[1][2])))
+            ran = xrange(i[1][0], i[1][1]+1)
+            ret = (r+''.join(piece) for r in t_ret for rep in ran for piece in product(chars, repeat=rep))
+        elif i[0] == 'branch':
+            subs = chain.from_iterable(_p(list(x)) for x in i[1][1])
+            ret = comb(ret, subs)
         elif i[0] == 'subpattern':
             l = i[1:]
-            ret = (r+piece for r in ret for sub in l for piece in _p(list(sub[1])))
-        elif i[0] == 'in':
-            l = list(i[1])
-            ret = (r+''.join(piece) for r in ret for piece in _p(l, True))
-        elif i[0] == 'range':
-            ranges.extend(map(chr, range(i[1][0], i[1][1]+1)))
-        elif i[0] == 'max_repeat':
-            tmp_ret = list(ret)
-            chars = [x for x in _p(list(i[1][2])) if x != '']
-            ran = (i[1][0], i[1][1]+1)
-            ret = (r+''.join(piece) for r in tmp_ret for rep in range(*ran) for piece in product(*repeat(chars, rep)))
-        elif i[0] == 'category':
-            cat = CATEGORIES.get(i[1], [''])
-            ret = (r+c for r in ret for c in cat)
-        elif i[0] == 'branch':
-            subs = []
-            for piece in (_p(list(x)) for x in i[1][1]):
-                subs.extend(piece)
-            ret = (r+s for r in ret for s in subs)
-        elif i[0] == 'any':
-            ret = (r+c for r in ret for c in CATEGORIES['category_any'])
+            subs = chain.from_iterable(_p(list(x[1])) for x in l)
+            ret = comb(ret, subs)
 
-    if len(ranges):
-        if len(ret) and ret[0] != '':
-            ret = (r+char for r in ret for char in ranges)
-        else:
-            ret = ranges
-    #print ret
-    for r in ret:
-        yield r
+    return ret
+
 
 
 def parse(s):
