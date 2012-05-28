@@ -76,11 +76,10 @@ def _p(d):
     return ret
 
 
-
 def parse(s):
     """docstring for parse"""
     r = sre_parse.parse(s)
-    print r
+    #print r
     return _p(list(r))
 
 
@@ -113,6 +112,10 @@ def __main__():
     # 'as(d|f)qw(e|r|s)[a-zA-Z]{2,3}'
     # 'as(QWE|Z([XC]|Y|U)V){2,3}asdf'
     # '.?'
+    # '.+'
+    # 'asdf.{1,4}qwer{2,5}'
+    # 'a(b)?(c)?(d)?'
+    # 'a[b][c][d]?[e]?
     args = argparser()
     for s in parse(args['regex']):
         try:
