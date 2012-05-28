@@ -18,7 +18,7 @@
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 from re import sre_parse
-from itertools import product, imap
+from itertools import product, imap, chain
 
 CATEGORIES = {'category_space'  : sre_parse.WHITESPACE
              ,'category_digit'  : sre_parse.DIGITS
@@ -72,9 +72,7 @@ def _p(d, append=False):
             cat = CATEGORIES.get(i[1], [''])
             ret = (r+c for r in ret for c in cat)
         elif i[0] == 'branch':
-            subs = []
-            for piece in (_p(list(x)) for x in i[1][1]):
-                subs.extend(piece)
+            subs = chain.from_iterable(_p(list(x)) for x in i[1][1])
             ret = (r+s for r in ret for s in subs)
         elif i[0] == 'any':
             ret = (r+c for r in ret for c in CATEGORIES['category_any'])
