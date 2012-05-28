@@ -18,7 +18,7 @@
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 from re import sre_parse
-from itertools import product, repeat
+from itertools import product, repeat, imap
 
 CATEGORIES = {'category_space'  : sre_parse.WHITESPACE
              ,'category_digit'  : sre_parse.DIGITS
@@ -62,7 +62,7 @@ def _p(d, append=False):
             l = list(i[1])
             ret = (r+''.join(piece) for r in ret for piece in _p(l, True))
         elif i[0] == 'range':
-            ranges.extend(map(chr, range(i[1][0], i[1][1]+1)))
+            ranges.extend(imap(chr, xrange(i[1][0], i[1][1]+1)))
         elif i[0] == 'max_repeat':
             tmp_ret = list(ret)
             chars = [x for x in _p(list(i[1][2])) if x != '']
