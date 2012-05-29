@@ -18,7 +18,7 @@
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 from re import sre_parse
-from itertools import product, imap, chain
+from itertools import product, imap, chain, tee
 
 CATEGORIES = {'category_space'  : sre_parse.WHITESPACE
              ,'category_digit'  : sre_parse.DIGITS
@@ -26,8 +26,8 @@ CATEGORIES = {'category_space'  : sre_parse.WHITESPACE
              }
 
 def comb(g, i):
-    g2 = list(i)
     for c in g:
+        g2,i = tee(i)
         for c2 in g2:
             yield c+c2
 
