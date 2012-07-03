@@ -44,33 +44,51 @@ def _in(d):
             ret.append(chr(i[1]))
     return ret
 
+
+def prods(orig, ran, items):
+    for o in orig:
+        for r in ran:
+            for s in product(items, repeat=r):
+                yield o+''.join(s)
+
 def _p(d):
     """docstring for _p"""
     ret = ['']
     params = []
-    index = -1
+    strings = 1
     for i in d:
-        index+=1
         if i[0] == 'in':
-            ret = comb(ret, _in(i[1]))
+            subs = _in(i[1])
+            strings *= len(subs)
+            ret = comb(ret, subs)
         elif i[0] == 'literal':
             ret = mappend(ret, chr(i[1]))
         elif i[0] == 'category':
-            ret = comb(ret, CATEGORIES.get(i[1], ['']))
+            subs = CATEGORIES.get(i[1], [''])
+            strings *= len(subs)
+            ret = comb(ret, subs)
         elif i[0] == 'any':
-            ret = comb(ret, CATEGORIES['category_any'])
+            subs = CATEGORIES['category_any']
+            strings *= len(subs)
+            ret = comb(ret, subs)
         elif i[0] == 'max_repeat':
-            #TODO !! t_ret
-            t_ret = list(ret)
+            # TODO limit range max
             chars = filter(None, _p(list(i[1][2])))
             ran = xrange(i[1][0], i[1][1]+1)
-            ret = (r+''.join(piece) for r in t_ret for rep in ran for piece in product(chars, repeat=rep))
+            #mit.add_range(ran, strings)
+            #print strings
+            #for i in ran:
+            #    strings += pow(len(chars), i)
+            #print 'e'
+            ret = prods(ret, ran, chars)
         elif i[0] == 'branch':
             subs = chain.from_iterable(_p(list(x)) for x in i[1][1])
+            strings *= len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'subpattern':
             l = i[1:]
-            subs = chain.from_iterable(_p(list(x[1])) for x in l)
+            subs = list(chain.from_iterable(_p(list(x[1])) for x in l))
+            strings *= len(subs)
             ret = comb(ret, subs)
 
     return ret
@@ -79,7 +97,7 @@ def _p(d):
 def parse(s):
     """docstring for parse"""
     r = sre_parse.parse(s)
-    #print r
+    # print r
     return _p(list(r))
 
 
