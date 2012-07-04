@@ -5,6 +5,10 @@ EXREX
 
 Exrex is a tool and python module that generates all matching strings to a given regular expression.
 
+### Install
+
+`easy_install 'https://github.com/asciimoo/exrex/tarball/master'`
+
 ### Command line usage
 
 ```
