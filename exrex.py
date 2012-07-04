@@ -88,7 +88,6 @@ def _gen(d, limit=20, count=False):
                 ran = xrange(i[1][0], i[1][1]+1)
             if count:
                 for i in ran:
-                    print '[!] %d' % pow(len(chars)+1, i)
                     strings *= pow(len(chars)+1, i)
             ret = prods(ret, ran, chars)
         elif i[0] == 'branch':
