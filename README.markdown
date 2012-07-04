@@ -58,6 +58,7 @@ This is an output.
 ### TODO
 
  * Count the number of matching strings (20%) - buggy
+ * Python3 compatibility (30%) - buggy
  * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (20%)
  * Memory usage reduction (100%) - fully generatorized
 
@@ -80,4 +81,6 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 
 (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 ```
+### Fun/arts
 
+ * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|={50}|(  ){0,5}\\\.| {11}~{39})'`
