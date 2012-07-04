@@ -8,8 +8,8 @@ Exrex is a tool and python module that generates all matching strings to a given
 ### Command line usage
 
 ```
-> python exrex.py --help
-usage: exrex.py [-h] [-o FILE] [-d DELIMITER] [-v] REGEX
+> python -m exrex --help
+usage: exrex.py [-h] [-o FILE] [-l] [-d DELIMITER] [-v] REGEX
 
 exrex - regular expression string generator
 
@@ -20,28 +20,46 @@ optional arguments:
   -h, --help            show this help message and exit
   -o FILE, --output FILE
                         Output file - default is STDOUT
+  -l, --limit           Max limit for range size - default is 20
   -d DELIMITER, --delimiter DELIMITER
                         Delimiter - default is \n
-  -v, --verbose         Verbosity level - default is 3
+  -v, --verbose         Verbose mode
+```
+
+Examples:
+```
+$ python -m exrex '[asdfg]'
+a
+s
+d
+f
+g
 ```
 
 ### Using as python module
 
-Example:
+Examples:
 
 ```python
 >>> import exrex
->>> [x for x in exrex.parse('((hai){2}|world)!')]
+>>> [x for x in exrex.generate('((hai){2}|world)!')]
 ['haihai!', 'world!']
->>> [x for x in exrex.parse('[ab]{1,3}')]
+>>> list(exrex.generate('[ab]{1,3}'))
 ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
+>>> print '\n'.join(exrex.generate('This is (a (code|cake|test)|an (apple|elf|output))\.'))
+This is a code.
+This is a cake.
+This is a test.
+This is an apple.
+This is an elf.
+This is an output.
 ```
 
 ### TODO
 
- * Memory usage reduction (!generators!) (70%)
- * Count the number of matching strings (0%)
- * Command line switches to change default character sets/ranges (eg. for '.','\s'..) (0%)
+ * Count the number of matching strings (20%) - buggy
+ * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (20%)
+ * Memory usage reduction (100%) - fully generatorized
 
 
 ### License
