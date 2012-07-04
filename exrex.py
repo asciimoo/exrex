@@ -80,7 +80,6 @@ def _gen(d, limit=20, count=False):
                 strings *= len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'max_repeat':
-            # TODO limit range max
             chars = filter(None, _gen(list(i[1][2]), limit))
             if i[1][1]+1 - i[1][0] > limit:
                 ran = xrange(i[1][0], i[1][0]+limit+1)
@@ -88,7 +87,7 @@ def _gen(d, limit=20, count=False):
                 ran = xrange(i[1][0], i[1][1]+1)
             if count:
                 for i in ran:
-                    strings *= pow(len(chars)+1, i)
+                    strings *= pow(len(chars), i)
             ret = prods(ret, ran, chars)
         elif i[0] == 'branch':
             subs = chain.from_iterable(_gen(list(x), limit) for x in i[1][1])
