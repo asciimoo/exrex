@@ -20,8 +20,10 @@
 from re import sre_parse
 from itertools import product, imap, chain, tee
 
-CATEGORIES = {'category_space'  : sre_parse.WHITESPACE
-             ,'category_digit'  : sre_parse.DIGITS
+__all__ = ('generate', 'CATEGORIES', 'count')
+
+CATEGORIES = {'category_space'  : sorted(sre_parse.WHITESPACE)
+             ,'category_digit'  : sorted(sre_parse.DIGITS)
              ,'category_any'    : [chr(x) for x in range(32, 123)]
              }
 
@@ -42,6 +44,9 @@ def _in(d):
             ret.extend(imap(chr, range(i[1][0], i[1][1]+1)))
         elif i[0] == 'literal':
             ret.append(chr(i[1]))
+        elif i[0] == 'category':
+            subs = CATEGORIES.get(i[1], [''])
+            ret.extend(subs)
     return ret
 
 
@@ -51,7 +56,7 @@ def prods(orig, ran, items):
             for s in product(items, repeat=r):
                 yield o+''.join(s)
 
-def _p(d):
+def _gen(d, limit=20, count=False):
     """docstring for _p"""
     ret = ['']
     params = []
@@ -59,37 +64,49 @@ def _p(d):
     for i in d:
         if i[0] == 'in':
             subs = _in(i[1])
-            strings *= len(subs)
+            if count:
+                strings *= len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'literal':
             ret = mappend(ret, chr(i[1]))
         elif i[0] == 'category':
             subs = CATEGORIES.get(i[1], [''])
-            strings *= len(subs)
+            if count:
+                strings *= len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'any':
             subs = CATEGORIES['category_any']
-            strings *= len(subs)
+            if count:
+                strings *= len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'max_repeat':
             # TODO limit range max
-            chars = filter(None, _p(list(i[1][2])))
-            ran = xrange(i[1][0], i[1][1]+1)
-            #mit.add_range(ran, strings)
-            #print strings
-            #for i in ran:
-            #    strings += pow(len(chars), i)
-            #print 'e'
+            chars = filter(None, _gen(list(i[1][2]), limit))
+            if i[1][1]+1 - i[1][0] > limit:
+                ran = xrange(i[1][0], i[1][0]+limit+1)
+            else:
+                ran = xrange(i[1][0], i[1][1]+1)
+            if count:
+                for i in ran:
+                    print '[!] %d' % pow(len(chars)+1, i)
+                    strings *= pow(len(chars)+1, i)
             ret = prods(ret, ran, chars)
         elif i[0] == 'branch':
-            subs = chain.from_iterable(_p(list(x)) for x in i[1][1])
-            strings *= len(subs)
+            subs = chain.from_iterable(_gen(list(x), limit) for x in i[1][1])
+            if count:
+                strings *= len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'subpattern':
             l = i[1:]
-            subs = list(chain.from_iterable(_p(list(x[1])) for x in l))
-            strings *= len(subs)
+            subs = list(chain.from_iterable(_gen(list(x[1]), limit) for x in l))
+            if count:
+                strings *= len(subs)
             ret = comb(ret, subs)
+        else:
+            print '[!] cannot handle expression "%r"' % i
+
+    if count:
+        return strings
 
     return ret
 
@@ -97,9 +114,13 @@ def _p(d):
 def parse(s):
     """docstring for parse"""
     r = sre_parse.parse(s)
-    # print r
-    return _p(list(r))
+    return list(r)
 
+def generate(s, limit=20):
+    return _gen(parse(s), limit)
+
+def count(s, limit=20):
+    return _gen(parse(s), limit, count=True)
 
 def argparser():
     import argparse
@@ -111,14 +132,21 @@ def argparser():
                      ,default   = stdout
                      ,type      = argparse.FileType('w')
                      )
+    argp.add_argument('-l', '--limit'
+                     ,help      = 'Max limit for range size - default is 20'
+                     ,default   = 20
+                     ,action    = 'store_const'
+                     ,const     = int
+                     ,metavar   = 'N'
+                     )
     argp.add_argument('-d', '--delimiter'
                      ,help      = 'Delimiter - default is \\n'
                      ,default   = '\n'
                      )
     argp.add_argument('-v', '--verbose'
-                     ,action    = 'count'
-                     ,help      = 'Verbosity level - default is 3'
-                     ,default   = 3
+                     ,action    = 'store_true'
+                     ,help      = 'Verbose mode'
+                     ,default   = False
                      )
     argp.add_argument('regex'
                      ,metavar   = 'REGEX'
@@ -135,7 +163,8 @@ def __main__():
     # 'a(b)?(c)?(d)?'
     # 'a[b][c][d]?[e]?
     args = argparser()
-    for s in parse(args['regex']):
+    if args['verbose']: args['output'].write('%r%s' % (parse(args['regex']), args['delimiter']))
+    for s in generate(args['regex'], args['limit']):
         try:
             args['output'].write(s+args['delimiter'])
         except:
