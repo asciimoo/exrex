@@ -17,8 +17,12 @@
 #
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
+try:
+    from future_builtins import map, range
+except:
+    pass
 from re import sre_parse
-from itertools import product, imap, chain, tee
+from itertools import product, chain, tee
 
 __all__ = ('generate', 'CATEGORIES', 'count')
 
@@ -41,7 +45,7 @@ def _in(d):
     ret = []
     for i in d:
         if i[0] == 'range':
-            ret.extend(imap(chr, range(i[1][0], i[1][1]+1)))
+            ret.extend(map(chr, range(i[1][0], i[1][1]+1)))
         elif i[0] == 'literal':
             ret.append(chr(i[1]))
         elif i[0] == 'category':
@@ -82,9 +86,9 @@ def _gen(d, limit=20, count=False):
         elif i[0] == 'max_repeat':
             chars = filter(None, _gen(list(i[1][2]), limit))
             if i[1][1]+1 - i[1][0] > limit:
-                ran = xrange(i[1][0], i[1][0]+limit+1)
+                ran = range(i[1][0], i[1][0]+limit)
             else:
-                ran = xrange(i[1][0], i[1][1]+1)
+                ran = range(i[1][0], i[1][1]+1)
             if count:
                 for i in ran:
                     strings *= pow(len(chars), i)
@@ -101,7 +105,7 @@ def _gen(d, limit=20, count=False):
                 strings *= len(subs)
             ret = comb(ret, subs)
         else:
-            print '[!] cannot handle expression "%r"' % i
+            print('[!] cannot handle expression "%r"' % i)
 
     if count:
         return strings
@@ -133,8 +137,8 @@ def argparser():
     argp.add_argument('-l', '--limit'
                      ,help      = 'Max limit for range size - default is 20'
                      ,default   = 20
-                     ,action    = 'store_const'
-                     ,const     = int
+                     ,action    = 'store'
+                     ,type      = int
                      ,metavar   = 'N'
                      )
     argp.add_argument('-d', '--delimiter'

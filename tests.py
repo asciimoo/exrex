@@ -17,10 +17,10 @@ def gen_test():
 def count_test():
     for regex, result in RS.items():
         if not count(regex) == len(result):
-            print '[LENERR] "%s" - %d:%d' % (regex, count(regex), len(result))
+            print('[LENERR] "%s" - %d:%d' % (regex, count(regex), len(result)))
 
 
 if __name__ == '__main__':
     gen_test()
-    print '[!] generation test passed'
+    print('[!] generation test passed')
     count_test()
