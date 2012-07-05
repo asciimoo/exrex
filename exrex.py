@@ -24,7 +24,7 @@ except:
 from re import sre_parse
 from itertools import product, chain, tee
 
-__all__ = ('generate', 'CATEGORIES', 'count')
+__all__ = ('generate', 'CATEGORIES', 'count', 'parse')
 
 CATEGORIES = {'category_space'  : sorted(sre_parse.WHITESPACE)
              ,'category_digit'  : sorted(sre_parse.DIGITS)
@@ -114,14 +114,36 @@ def _gen(d, limit=20, count=False):
 
 
 def parse(s):
-    """docstring for parse"""
+    """Regular expression parser
+
+    :param s: Regular expression
+    :type s: str
+    :rtype: list
+    """
     r = sre_parse.parse(s)
     return list(r)
 
 def generate(s, limit=20):
+    """Creates a generator that generates all matching strings to a given regular expression
+
+    :param s: Regular expression
+    :type s: str
+    :param limit: Range limit
+    :type limit: int
+    :returns: string generator object
+    """
     return _gen(parse(s), limit)
 
 def count(s, limit=20):
+    """Counts all matching strings to a given regular expression
+
+    :param s: Regular expression
+    :type s: str
+    :param limit: Range limit
+    :type limit: int
+    :rtype: int
+    :returns: number of matching strings
+    """
     return _gen(parse(s), limit, count=True)
 
 def argparser():
