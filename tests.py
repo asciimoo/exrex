@@ -8,6 +8,7 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'((hai){2}|world)!': ['haihai!', 'world!']
      ,'[ab]{1,3}': ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
      ,'\d': map(str, range(0, 10))
+     ,'a[b]?(c){0,1}': ['a', 'ac', 'ab', 'abc']
      }
 
 def gen_test():
@@ -23,4 +24,4 @@ def count_test():
 if __name__ == '__main__':
     gen_test()
     print('[!] generation test passed')
-    count_test()
+    #count_test()
