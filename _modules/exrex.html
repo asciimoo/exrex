@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>exrex &mdash; exrex 0.5.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.5.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="exrex 0.5.2 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">exrex 0.5.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for exrex</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+<span class="c"># This file is part of exrex.</span>
+<span class="c">#</span>
+<span class="c"># exrex is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU Affero General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># exrex is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU Affero General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU Affero General Public License</span>
+<span class="c"># along with exrex. If not, see &lt; http://www.gnu.org/licenses/ &gt;.</span>
+<span class="c">#</span>
+<span class="c"># (C) 2012- by Adam Tauber, &lt;asciimoo@gmail.com&gt;</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">future_builtins</span> <span class="kn">import</span> <span class="nb">map</span><span class="p">,</span> <span class="nb">range</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="kn">from</span> <span class="nn">re</span> <span class="kn">import</span> <span class="n">sre_parse</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span><span class="p">,</span> <span class="n">chain</span><span class="p">,</span> <span class="n">tee</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;generate&#39;</span><span class="p">,</span> <span class="s">&#39;CATEGORIES&#39;</span><span class="p">,</span> <span class="s">&#39;count&#39;</span><span class="p">,</span> <span class="s">&#39;parse&#39;</span><span class="p">)</span>
+
+<span class="n">CATEGORIES</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;category_space&#39;</span>  <span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sre_parse</span><span class="o">.</span><span class="n">WHITESPACE</span><span class="p">)</span>
+             <span class="p">,</span><span class="s">&#39;category_digit&#39;</span>  <span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sre_parse</span><span class="o">.</span><span class="n">DIGITS</span><span class="p">)</span>
+             <span class="p">,</span><span class="s">&#39;category_any&#39;</span>    <span class="p">:</span> <span class="p">[</span><span class="nb">chr</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">123</span><span class="p">)]</span>
+             <span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">comb</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">g</span><span class="p">:</span>
+        <span class="n">g2</span><span class="p">,</span><span class="n">i</span> <span class="o">=</span> <span class="n">tee</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c2</span> <span class="ow">in</span> <span class="n">g2</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">c</span><span class="o">+</span><span class="n">c2</span>
+
+<span class="k">def</span> <span class="nf">mappend</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">cc</span> <span class="ow">in</span> <span class="n">g</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">cc</span><span class="o">+</span><span class="n">c</span>
+
+<span class="k">def</span> <span class="nf">_in</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;range&#39;</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">chr</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;literal&#39;</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;category&#39;</span><span class="p">:</span>
+            <span class="n">subs</span> <span class="o">=</span> <span class="n">CATEGORIES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">])</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+
+<span class="k">def</span> <span class="nf">prods</span><span class="p">(</span><span class="n">orig</span><span class="p">,</span> <span class="n">ran</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">orig</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ran</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">r</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">o</span><span class="o">+</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_gen</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;docstring for _p&quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">strings</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;in&#39;</span><span class="p">:</span>
+            <span class="n">subs</span> <span class="o">=</span> <span class="n">_in</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+                <span class="n">strings</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">subs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;literal&#39;</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">mappend</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;category&#39;</span><span class="p">:</span>
+            <span class="n">subs</span> <span class="o">=</span> <span class="n">CATEGORIES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+                <span class="n">strings</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">subs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;any&#39;</span><span class="p">:</span>
+            <span class="n">subs</span> <span class="o">=</span> <span class="n">CATEGORIES</span><span class="p">[</span><span class="s">&#39;category_any&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+                <span class="n">strings</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">subs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;max_repeat&#39;</span><span class="p">:</span>
+            <span class="n">chars</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">_gen</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]),</span> <span class="n">limit</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">:</span>
+                <span class="n">ran</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">limit</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ran</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ran</span><span class="p">:</span>
+                    <span class="n">strings</span> <span class="o">*=</span> <span class="nb">pow</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chars</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">prods</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">ran</span><span class="p">,</span> <span class="n">chars</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;branch&#39;</span><span class="p">:</span>
+            <span class="n">subs</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">_gen</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">limit</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+                <span class="n">strings</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">subs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;subpattern&#39;</span><span class="p">:</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">subs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">_gen</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">limit</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">l</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+                <span class="n">strings</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">subs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;[!] cannot handle expression &quot;</span><span class="si">%r</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">strings</span>
+
+    <span class="k">return</span> <span class="n">ret</span>
+
+
+<div class="viewcode-block" id="parse"><a class="viewcode-back" href="../index.html#exrex.parse">[docs]</a><span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Regular expression parser</span>
+
+<span class="sd">    :param s: Regular expression</span>
+<span class="sd">    :type s: str</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">sre_parse</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="generate"><a class="viewcode-back" href="../index.html#exrex.generate">[docs]</a><span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a generator that generates all matching strings to a given regular expression</span>
+
+<span class="sd">    :param s: Regular expression</span>
+<span class="sd">    :type s: str</span>
+<span class="sd">    :param limit: Range limit</span>
+<span class="sd">    :type limit: int</span>
+<span class="sd">    :returns: string generator object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_gen</span><span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">limit</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="count"><a class="viewcode-back" href="../index.html#exrex.count">[docs]</a><span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Counts all matching strings to a given regular expression</span>
+
+<span class="sd">    :param s: Regular expression</span>
+<span class="sd">    :type s: str</span>
+<span class="sd">    :param limit: Range limit</span>
+<span class="sd">    :type limit: int</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    :returns: number of matching strings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_gen</span><span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">limit</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</div>
+<span class="k">def</span> <span class="nf">argparser</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">argparse</span>
+    <span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">stdout</span>
+    <span class="n">argp</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s">&#39;exrex - regular expression string generator&#39;</span><span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-o&#39;</span><span class="p">,</span> <span class="s">&#39;--output&#39;</span>
+                     <span class="p">,</span><span class="n">help</span>      <span class="o">=</span> <span class="s">&#39;Output file - default is STDOUT&#39;</span>
+                     <span class="p">,</span><span class="n">metavar</span>   <span class="o">=</span> <span class="s">&#39;FILE&#39;</span>
+                     <span class="p">,</span><span class="n">default</span>   <span class="o">=</span> <span class="n">stdout</span>
+                     <span class="p">,</span><span class="nb">type</span>      <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">FileType</span><span class="p">(</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
+                     <span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-l&#39;</span><span class="p">,</span> <span class="s">&#39;--limit&#39;</span>
+                     <span class="p">,</span><span class="n">help</span>      <span class="o">=</span> <span class="s">&#39;Max limit for range size - default is 20&#39;</span>
+                     <span class="p">,</span><span class="n">default</span>   <span class="o">=</span> <span class="mi">20</span>
+                     <span class="p">,</span><span class="n">action</span>    <span class="o">=</span> <span class="s">&#39;store&#39;</span>
+                     <span class="p">,</span><span class="nb">type</span>      <span class="o">=</span> <span class="nb">int</span>
+                     <span class="p">,</span><span class="n">metavar</span>   <span class="o">=</span> <span class="s">&#39;N&#39;</span>
+                     <span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-d&#39;</span><span class="p">,</span> <span class="s">&#39;--delimiter&#39;</span>
+                     <span class="p">,</span><span class="n">help</span>      <span class="o">=</span> <span class="s">&#39;Delimiter - default is </span><span class="se">\\</span><span class="s">n&#39;</span>
+                     <span class="p">,</span><span class="n">default</span>   <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+                     <span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-v&#39;</span><span class="p">,</span> <span class="s">&#39;--verbose&#39;</span>
+                     <span class="p">,</span><span class="n">action</span>    <span class="o">=</span> <span class="s">&#39;store_true&#39;</span>
+                     <span class="p">,</span><span class="n">help</span>      <span class="o">=</span> <span class="s">&#39;Verbose mode&#39;</span>
+                     <span class="p">,</span><span class="n">default</span>   <span class="o">=</span> <span class="bp">False</span>
+                     <span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;regex&#39;</span>
+                     <span class="p">,</span><span class="n">metavar</span>   <span class="o">=</span> <span class="s">&#39;REGEX&#39;</span>
+                     <span class="p">,</span><span class="n">help</span>      <span class="o">=</span> <span class="s">&#39;REGEX string&#39;</span>
+                     <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">vars</span><span class="p">(</span><span class="n">argp</span><span class="o">.</span><span class="n">parse_args</span><span class="p">())</span>
+
+<span class="k">def</span> <span class="nf">__main__</span><span class="p">():</span>
+    <span class="c"># &#39;as(d|f)qw(e|r|s)[a-zA-Z]{2,3}&#39;</span>
+    <span class="c"># &#39;as(QWE|Z([XC]|Y|U)V){2,3}asdf&#39;</span>
+    <span class="c"># &#39;.?&#39;</span>
+    <span class="c"># &#39;.+&#39;</span>
+    <span class="c"># &#39;asdf.{1,4}qwer{2,5}&#39;</span>
+    <span class="c"># &#39;a(b)?(c)?(d)?&#39;</span>
+    <span class="c"># &#39;a[b][c][d]?[e]?</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">argparser</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span> <span class="n">args</span><span class="p">[</span><span class="s">&#39;output&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%r%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s">&#39;regex&#39;</span><span class="p">]),</span> <span class="n">args</span><span class="p">[</span><span class="s">&#39;delimiter&#39;</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">generate</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s">&#39;regex&#39;</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="s">&#39;limit&#39;</span><span class="p">]):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">args</span><span class="p">[</span><span class="s">&#39;output&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="o">+</span><span class="n">args</span><span class="p">[</span><span class="s">&#39;delimiter&#39;</span><span class="p">])</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">break</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">__main__</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">exrex 0.5.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Adam Tauber.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
