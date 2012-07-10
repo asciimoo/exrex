@@ -64,24 +64,24 @@ def _gen(d, limit=20, count=False):
     """docstring for _p"""
     ret = ['']
     params = []
-    strings = 1
+    strings = 0
     for i in d:
         if i[0] == 'in':
             subs = _in(i[1])
             if count:
-                strings *= len(subs)
+                strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'literal':
             ret = mappend(ret, chr(i[1]))
         elif i[0] == 'category':
             subs = CATEGORIES.get(i[1], [''])
             if count:
-                strings *= len(subs)
+                strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'any':
             subs = CATEGORIES['category_any']
             if count:
-                strings *= len(subs)
+                strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'max_repeat':
             chars = filter(None, _gen(list(i[1][2]), limit))
@@ -91,18 +91,18 @@ def _gen(d, limit=20, count=False):
                 ran = range(i[1][0], i[1][1]+1)
             if count:
                 for i in ran:
-                    strings *= pow(len(chars), i)
+                    strings += pow(len(chars), i)
             ret = prods(ret, ran, chars)
         elif i[0] == 'branch':
             subs = chain.from_iterable(_gen(list(x), limit) for x in i[1][1])
             if count:
-                strings *= len(subs)
+                strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'subpattern':
             l = i[1:]
             subs = list(chain.from_iterable(_gen(list(x[1]), limit) for x in l))
             if count:
-                strings *= len(subs)
+                strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         else:
             print('[!] cannot handle expression "%r"' % i)
