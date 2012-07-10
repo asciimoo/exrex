@@ -108,3 +108,9 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 ### Fun/arts
 
  * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|={50}|(  ){0,5}\\\.| {11}~{39})'`
+
+### Profiling
+
+ * `python -m cProfile exrex.py '[a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z]' -o /dev/null`
+ * `python -m cProfile exrex.py '[0-9]{6}' -o /dev/null`
+
