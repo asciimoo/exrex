@@ -184,7 +184,7 @@ def argparser():
     return vars(argp.parse_args())
 
 def __main__():
-    from sys import exit
+    from sys import exit, stderr
     # 'as(d|f)qw(e|r|s)[a-zA-Z]{2,3}'
     # 'as(QWE|Z([XC]|Y|U)V){2,3}asdf'
     # '.?'
@@ -198,7 +198,12 @@ def __main__():
     if args['count']:
         args['output'].write('%d%s' % (count(args['regex']), args['delimiter']))
         exit(0)
-    for s in generate(args['regex'], args['limit']):
+    try:
+        g = generate(args['regex'], args['limit'])
+    except Exception, e:
+        print >> stderr, '[!] Error: ', e
+        exit(1)
+    for s in g:
         try:
             args['output'].write(s+args['delimiter'])
         except:
