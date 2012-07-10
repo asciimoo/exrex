@@ -25,6 +25,7 @@ optional arguments:
   -o FILE, --output FILE
                         Output file - default is STDOUT
   -l, --limit           Max limit for range size - default is 20
+  -c, --count           Count matching strings
   -d DELIMITER, --delimiter DELIMITER
                         Delimiter - default is \n
   -v, --verbose         Verbose mode
@@ -38,6 +39,8 @@ s
 d
 f
 g
+$ python -m exrex '[01]{10}' -c
+1024
 ```
 
 ### Using as python module
@@ -48,6 +51,8 @@ Examples:
 >>> import exrex
 >>> [x for x in exrex.generate('((hai){2}|world)!')]
 ['haihai!', 'world!']
+>>> exrex.count('[01]{0,9}')
+1023
 >>> list(exrex.generate('[ab]{1,3}'))
 ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
 >>> print '\n'.join(exrex.generate('This is (a (code|cake|test)|an (apple|elf|output))\.'))
@@ -61,9 +66,9 @@ This is an output.
 
 ### TODO
 
- * Count the number of matching strings (20%) - buggy
  * Python3 compatibility (30%) - buggy
  * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (20%)
+ * Count the number of matching strings (90%)
  * Memory usage reduction (100%) - fully generatorized
 
 
