@@ -39,6 +39,9 @@ s
 d
 f
 g
+```
+
+```
 $ python -m exrex '[01]{10}' -c
 1024
 ```
@@ -49,12 +52,24 @@ Examples:
 
 ```python
 >>> import exrex
+```
+
+```python
 >>> [x for x in exrex.generate('((hai){2}|world)!')]
 ['haihai!', 'world!']
+```
+
+```python
 >>> exrex.count('[01]{0,9}')
 1023
+```
+
+```python
 >>> list(exrex.generate('[ab]{1,3}'))
 ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
+```
+
+```python
 >>> print '\n'.join(exrex.generate('This is (a (code|cake|test)|an (apple|elf|output))\.'))
 This is a code.
 This is a cake.
