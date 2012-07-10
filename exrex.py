@@ -163,6 +163,11 @@ def argparser():
                      ,type      = int
                      ,metavar   = 'N'
                      )
+    argp.add_argument('-c', '--count'
+                     ,help      = 'Count matching strings'
+                     ,default   = False
+                     ,action    = 'store_true'
+                     )
     argp.add_argument('-d', '--delimiter'
                      ,help      = 'Delimiter - default is \\n'
                      ,default   = '\n'
@@ -179,6 +184,7 @@ def argparser():
     return vars(argp.parse_args())
 
 def __main__():
+    from sys import exit
     # 'as(d|f)qw(e|r|s)[a-zA-Z]{2,3}'
     # 'as(QWE|Z([XC]|Y|U)V){2,3}asdf'
     # '.?'
@@ -187,7 +193,11 @@ def __main__():
     # 'a(b)?(c)?(d)?'
     # 'a[b][c][d]?[e]?
     args = argparser()
-    if args['verbose']: args['output'].write('%r%s' % (parse(args['regex']), args['delimiter']))
+    if args['verbose']:
+        args['output'].write('%r%s' % (parse(args['regex']), args['delimiter']))
+    if args['count']:
+        args['output'].write('%d%s' % (count(args['regex']), args['delimiter']))
+        exit(0)
     for s in generate(args['regex'], args['limit']):
         try:
             args['output'].write(s+args['delimiter'])
