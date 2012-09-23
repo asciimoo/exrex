@@ -23,8 +23,9 @@ except:
     pass
 from re import sre_parse
 from itertools import product, chain, tee
+from random import choice,randint
 
-__all__ = ('generate', 'CATEGORIES', 'count', 'parse')
+__all__ = ('generate', 'CATEGORIES', 'count', 'parse', 'getone')
 
 CATEGORIES = {'category_space'  : sorted(sre_parse.WHITESPACE)
              ,'category_digit'  : sorted(sre_parse.DIGITS)
@@ -61,7 +62,7 @@ def prods(orig, ran, items):
                 yield o+''.join(s)
 
 def _gen(d, limit=20, count=False):
-    """docstring for _p"""
+    """docstring for _gen"""
     ret = ['']
     strings = 0
     for i in d:
@@ -103,11 +104,46 @@ def _gen(d, limit=20, count=False):
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
+        # ignore ^ and $
+        elif i[0] == 'at':
+            continue
         else:
             print('[!] cannot handle expression "%r"' % i)
 
     if count:
         return strings
+
+    return ret
+
+def _randone(d, limit=20):
+    """docstring for _randone"""
+    ret = ''
+    for i in d:
+        if i[0] == 'in':
+            ret += choice(_in(i[1]))
+        elif i[0] == 'literal':
+            ret += chr(i[1])
+        elif i[0] == 'category':
+            ret += choice(CATEGORIES.get(i[1], ['']))
+        elif i[0] == 'any':
+            ret += choice(CATEGORIES['category_any'])
+        elif i[0] == 'max_repeat':
+            chars = filter(None, _gen(list(i[1][2]), limit))
+            if i[1][1]+1 - i[1][0] > limit:
+                min,max = i[1][0], i[1][0]+limit
+            else:
+                min,max = i[1][0], i[1][1]
+            for _ in range(randint(min, max)):
+                ret += choice(chars)
+        elif i[0] == 'branch':
+            ret += choice(chain.from_iterable(_gen(list(x), limit) for x in i[1][1]))
+        elif i[0] == 'subpattern':
+            l = i[1:]
+            ret += choice(list(chain.from_iterable(_gen(list(x[1]), limit) for x in l)))
+        elif i[0] == 'at':
+            continue
+        else:
+            print('[!] cannot handle expression "%s"' % str(i))
 
     return ret
 
@@ -145,6 +181,11 @@ def count(s, limit=20):
     """
     return _gen(parse(s), limit, count=True)
 
+def getone(regex_string, limit=20):
+    """Returns a random matching string to a given regular expression
+    """
+    return _randone(parse(regex_string), limit)
+
 def argparser():
     import argparse
     from sys import stdout
@@ -164,6 +205,11 @@ def argparser():
                      )
     argp.add_argument('-c', '--count'
                      ,help      = 'Count matching strings'
+                     ,default   = False
+                     ,action    = 'store_true'
+                     )
+    argp.add_argument('-r', '--random'
+                     ,help      = 'Returns a random string that matches to the regex'
                      ,default   = False
                      ,action    = 'store_true'
                      )
@@ -196,6 +242,9 @@ def __main__():
         args['output'].write('%r%s' % (parse(args['regex']), args['delimiter']))
     if args['count']:
         args['output'].write('%d%s' % (count(args['regex']), args['delimiter']))
+        exit(0)
+    if args['random']:
+        args['output'].write('%s%s' % (getone(args['regex']), args['delimiter']))
         exit(0)
     try:
         g = generate(args['regex'], args['limit'])
