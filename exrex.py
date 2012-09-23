@@ -63,7 +63,6 @@ def prods(orig, ran, items):
 def _gen(d, limit=20, count=False):
     """docstring for _p"""
     ret = ['']
-    params = []
     strings = 0
     for i in d:
         if i[0] == 'in':
