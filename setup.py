@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'exrex',
-    version = '0.5.0',
+    version = '0.6.0',
     author = 'Adam Tauber',
     author_email = 'asciimoo@gmail.com',
-    description = ('Exrex is a tool and python module that generates all matching strings to a given regular expression.'),
+    description = ('Exrex is a tool and python module that generates all - or random - matching strings to a given regular expression.'),
     license = 'AGPLv3+',
     keywords = "regexp generators string generation",
     url = 'https://github.com/asciimoo/exrex',

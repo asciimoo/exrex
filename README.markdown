@@ -3,7 +3,10 @@ EXREX
 
 ### Description
 
-Exrex is a tool and python module that generates all matching strings to a given regular expression.
+Exrex is a command line tool and python module that generates all - or random - matching strings to a given regular expression.
+It is pure python, without external dependencies.
+
+There are regular expressions with infinite matching strings (eg.: `[a-z]+`), in these cases exrex limits the maximum length of the infinite parts (default to 20).
 
 ### Documentation
 
@@ -30,6 +33,7 @@ optional arguments:
                         Output file - default is STDOUT
   -l, --limit           Max limit for range size - default is 20
   -c, --count           Count matching strings
+  -r, --random          Returns a random string that matches to the regex
   -d DELIMITER, --delimiter DELIMITER
                         Delimiter - default is \n
   -v, --verbose         Verbose mode
@@ -64,6 +68,11 @@ Examples:
 ```
 
 ```python
+>>> exrex.getone('\d{4}-\d{4}-\d{4}-[0-9]{4}')
+'3096-7886-2834-5671'
+```
+
+```python
 >>> exrex.count('[01]{0,9}')
 1023
 ```
@@ -85,8 +94,8 @@ This is an output.
 
 ### TODO
 
- * Python3 compatibility (30%) - buggy
- * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (20%)
+ * Python3 compatibility (30%) - not works
+ * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
  * Count the number of matching strings (90%)
  * Memory usage reduction (100%) - fully generatorized
 
