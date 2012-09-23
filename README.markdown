@@ -14,7 +14,7 @@ http://exrex.readthedocs.org/en/latest/
 
 ### Install
 
-`easy_install 'https://github.com/asciimoo/exrex/tarball/master'`
+`easy_install exrex`
 
 ### Command line usage
 
