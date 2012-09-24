@@ -16,44 +16,6 @@ http://exrex.readthedocs.org/en/latest/
 
 `easy_install exrex`
 
-### Command line usage
-
-```
-> python -m exrex --help
-usage: exrex.py [-h] [-o FILE] [-l] [-d DELIMITER] [-v] REGEX
-
-exrex - regular expression string generator
-
-positional arguments:
-  REGEX                 REGEX string
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -o FILE, --output FILE
-                        Output file - default is STDOUT
-  -l, --limit           Max limit for range size - default is 20
-  -c, --count           Count matching strings
-  -r, --random          Returns a random string that matches to the regex
-  -d DELIMITER, --delimiter DELIMITER
-                        Delimiter - default is \n
-  -v, --verbose         Verbose mode
-```
-
-Examples:
-```
-$ python -m exrex '[asdfg]'
-a
-s
-d
-f
-g
-```
-
-```
-$ python -m exrex '[01]{10}' -c
-1024
-```
-
 ### Using as python module
 
 Examples:
@@ -90,6 +52,50 @@ This is a test.
 This is an apple.
 This is an elf.
 This is an output.
+```
+
+### Command line usage
+
+```
+> python -m exrex --help
+usage: exrex.py [-h] [-o FILE] [-l] [-d DELIMITER] [-v] REGEX
+
+exrex - regular expression string generator
+
+positional arguments:
+  REGEX                 REGEX string
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o FILE, --output FILE
+                        Output file - default is STDOUT
+  -l, --limit           Max limit for range size - default is 20
+  -c, --count           Count matching strings
+  -r, --random          Returns a random string that matches to the regex
+  -d DELIMITER, --delimiter DELIMITER
+                        Delimiter - default is \n
+  -v, --verbose         Verbose mode
+```
+
+Examples:
+```
+$ python -m exrex '[asdfg]'
+a
+s
+d
+f
+g
+
+```
+
+```
+$ python -m exrex -r '(0[1-9]|1[012])-\d{2}'
+09-85
+```
+
+```
+$ python -m exrex '[01]{10}' -c
+1024
 ```
 
 ### TODO
