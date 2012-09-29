@@ -6,7 +6,7 @@ EXREX
 Exrex is a command line tool and python module that generates all - or random - matching strings to a given regular expression.
 It is pure python, without external dependencies.
 
-There are regular expressions with infinite matching strings (eg.: `[a-z]+`), in these cases exrex limits the maximum length of the infinite parts (default to 20).
+There are regular expressions with infinite matching strings (eg.: `[a-z]+`), in these cases exrex limits the maximum length of the infinite parts.
 
 ### Documentation
 
