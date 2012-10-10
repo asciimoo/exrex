@@ -44,14 +44,39 @@ def mappend(g, c):
 
 def _in(d):
     ret = []
+    neg = False
     for i in d:
         if i[0] == 'range':
-            ret.extend(map(chr, range(i[1][0], i[1][1]+1)))
+            subs = map(chr, range(i[1][0], i[1][1]+1))
+            if neg:
+                for char in subs:
+                    try:
+                        ret.remove(char)
+                    except:
+                        pass
+            else:
+                ret.extend(subs)
         elif i[0] == 'literal':
-            ret.append(chr(i[1]))
+            if neg:
+                try:
+                    ret.remove(chr(i[1]))
+                except:
+                    pass
+            else:
+                ret.append(chr(i[1]))
         elif i[0] == 'category':
             subs = CATEGORIES.get(i[1], [''])
-            ret.extend(subs)
+            if neg:
+                for char in subs:
+                    try:
+                        ret.remove(char)
+                    except:
+                        pass
+            else:
+                ret.extend(subs)
+        elif i[0] == 'negate':
+            ret = list(CATEGORIES['category_any'])
+            neg = True
     return ret
 
 
