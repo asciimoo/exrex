@@ -107,6 +107,12 @@ def _gen(d, limit=20, count=False):
         # ignore ^ and $
         elif i[0] == 'at':
             continue
+        elif i[0] == 'not_literal':
+            subs = list(CATEGORIES['category_any'])
+            subs.remove(chr(i[1]))
+            if count:
+                strings = (strings or 1) * len(subs)
+            ret = comb(ret, subs)
         else:
             print('[!] cannot handle expression "%r"' % i)
 
@@ -142,6 +148,10 @@ def _randone(d, limit=20):
             ret += choice(list(chain.from_iterable(_gen(list(x[1]), limit) for x in l)))
         elif i[0] == 'at':
             continue
+        elif i[0] == 'not_literal':
+            c=list(CATEGORIES['category_any'])
+            c.remove(chr(i[1]))
+            ret += choice(c)
         else:
             print('[!] cannot handle expression "%s"' % str(i))
 
