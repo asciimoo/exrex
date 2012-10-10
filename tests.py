@@ -1,8 +1,7 @@
 
 
-from exrex import generate, count, getone
+from exrex import generate, count, getone, CATEGORIES
 from re import match
-
 
 RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'[12]{1,2}': ['1', '2', '11', '12', '21', '22']
@@ -12,6 +11,8 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'a[b]?(c){0,1}': ['a', 'ac', 'ab', 'abc']
      ,'(a(b(c(d(e(f))))))': ['abcdef']
      ,'(a(b(c(d(e(f){1,2}))))){1,2}': ['abcdef', 'abcdeff', 'abcdefabcdef', 'abcdefabcdeff', 'abcdeffabcdef', 'abcdeffabcdeff']
+     ,'[^a]': [x for x in CATEGORIES['category_any'] if x != 'a']
+     ,'[^asdf]': [x for x in CATEGORIES['category_any'] if x not in 'asdf']
      }
 
 BIGS = ['^a*$'
