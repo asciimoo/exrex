@@ -86,6 +86,15 @@ def prods(orig, ran, items):
             for s in product(items, repeat=r):
                 yield o+''.join(s)
 
+def ggen(g1, f, *args, **kwargs):
+    for a in g1:
+        g2 = f(*args, **kwargs)
+        if isinstance(g2, int):
+            yield g2
+        else:
+            for b in g2:
+                yield a+b
+
 def _gen(d, limit=20, count=False):
     """docstring for _gen"""
     ret = ['']
@@ -119,16 +128,14 @@ def _gen(d, limit=20, count=False):
                     strings += pow(len(chars), i)
             ret = prods(ret, ran, chars)
         elif i[0] == 'branch':
-            subs = chain.from_iterable(_gen(list(x), limit) for x in i[1][1])
+            subs = list(chain.from_iterable(_gen(list(x), limit) for x in i[1][1]))
             if count:
-                strings = (strings or 1) * len(subs)
+                strings = (strings or 1) * (len(subs) or 1)
             ret = comb(ret, subs)
         elif i[0] == 'subpattern':
-            l = i[1:]
-            subs = list(chain.from_iterable(_gen(list(x[1]), limit) for x in l))
             if count:
-                strings = (strings or 1) * len(subs)
-            ret = comb(ret, subs)
+                strings = (strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True)) or 1)
+            ret = ggen(ret, _gen, i[1][1], limit=limit, count=False)
         # ignore ^ and $
         elif i[0] == 'at':
             continue
@@ -138,8 +145,11 @@ def _gen(d, limit=20, count=False):
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
+        elif i[0] == 'assert':
+            print i[1][1]
+            continue
         else:
-            print('[!] cannot handle expression "%r"' % i)
+            print('[!] cannot handle expression ' + repr(i))
 
     if count:
         return strings
@@ -167,10 +177,9 @@ def _randone(d, limit=20):
             for _ in range(randint(min, max)):
                 ret += choice(chars)
         elif i[0] == 'branch':
-            ret += choice(chain.from_iterable(_gen(list(x), limit) for x in i[1][1]))
+            ret += choice(list(chain.from_iterable(_gen(list(x), limit) for x in i[1][1])))
         elif i[0] == 'subpattern':
-            l = i[1:]
-            ret += choice(list(chain.from_iterable(_gen(list(x[1]), limit) for x in l)))
+            ret += _randone(i[1][1], limit)
         elif i[0] == 'at':
             continue
         elif i[0] == 'not_literal':
@@ -274,12 +283,12 @@ def __main__():
     # 'a[b][c][d]?[e]?
     args = argparser()
     if args['verbose']:
-        args['output'].write('%r%s' % (parse(args['regex']), args['delimiter']))
+        args['output'].write('%r%s' % (parse(args['regex'], limit=args['limit']), args['delimiter']))
     if args['count']:
-        args['output'].write('%d%s' % (count(args['regex']), args['delimiter']))
+        args['output'].write('%d%s' % (count(args['regex'], limit=args['limit']), args['delimiter']))
         exit(0)
     if args['random']:
-        args['output'].write('%s%s' % (getone(args['regex']), args['delimiter']))
+        args['output'].write('%s%s' % (getone(args['regex'], limit=args['limit']), args['delimiter']))
         exit(0)
     try:
         g = generate(args['regex'], args['limit'])
