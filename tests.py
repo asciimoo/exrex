@@ -18,21 +18,43 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
 BIGS = ['^a*$'
        ,'^[a-zA-Z]+$'
        ,'^(foo){3,}$'
+       ,'([^/]+)(.*)'
+       ,'[^/]+(.*)'
+       ,'([^/]+).*'
+       ,'([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+'
        ]
 
 def gen_test():
     for regex, result in RS.items():
-        assert list(generate(regex)) == result
+        try:
+            assert list(generate(regex)) == result
+        except:
+            print '[E] Assertion error! "%s"\n\t%r != %r' % (regex, list(generate(regex)), result)
 
 def count_test():
     for regex, result in RS.items():
-        assert count(regex) == len(result)
+        c = count(regex)
+        l = len(result)
+        try:
+            assert c == l
+        except:
+            print '[E] Assertion error! "%s"\n\t%d != %d' % (regex, c, l)
 
-def getone_test():
+def getone_test(tries):
     for regex,_ in RS.items():
-        assert match(regex, getone(regex))
+        for _ in range(tries):
+            s = getone(regex)
+            try:
+                assert match(regex, s)
+            except:
+                print '[E] Assertion error! "%s"\n\t%s not match' % (regex, s)
     for regex in BIGS:
-        assert match(regex, getone(regex))
+        for _ in range(tries):
+            s = getone(regex)
+            try:
+                assert match(regex, s)
+            except:
+                print '[E] Assertion error! "%s"\n\t%s not match' % (regex, s)
 
 
 if __name__ == '__main__':
@@ -40,5 +62,5 @@ if __name__ == '__main__':
     print('[+] generation test passed')
     count_test()
     print('[+] length test passed')
-    getone_test()
+    getone_test(200)
     print('[+] random generation test passed')
