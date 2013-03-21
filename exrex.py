@@ -119,7 +119,7 @@ def _gen(d, limit=20, count=False):
             ret = comb(ret, subs)
         elif i[0] == 'max_repeat':
             chars = filter(None, _gen(list(i[1][2]), limit))
-            if i[1][1]+1 - i[1][0] > limit:
+            if i[1][1]+1 - i[1][0] >= limit:
                 ran = range(i[1][0], i[1][0]+limit)
             else:
                 ran = range(i[1][0], i[1][1]+1)
@@ -170,7 +170,7 @@ def _randone(d, limit=20):
             ret += choice(CATEGORIES['category_any'])
         elif i[0] == 'max_repeat':
             chars = filter(None, _gen(list(i[1][2]), limit))
-            if i[1][1]+1 - i[1][0] > limit:
+            if i[1][1]+1 - i[1][0] >= limit:
                 min,max = i[1][0], i[1][0]+limit
             else:
                 min,max = i[1][0], i[1][1]
