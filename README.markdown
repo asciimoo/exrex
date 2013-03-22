@@ -126,7 +126,7 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 ```
 ### Fun/arts
 
- * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|={50}|(  ){0,5}\\\.| {11}~{39})'`
+ * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|\.={50}| (  ){0,5}\\\.| {12}~{39})'`
 
 ### Profiling
 
