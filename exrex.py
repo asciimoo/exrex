@@ -18,7 +18,7 @@
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 try:
-    from future_builtins import map, range
+    from future_builtins import map, range, filter
 except:
     pass
 from re import sre_parse
@@ -80,10 +80,10 @@ def _in(d):
     return ret
 
 
-def prods(orig, ran, items):
+def prods(orig, ran, items, limit):
     for o in orig:
         for r in ran:
-            for s in product(items, repeat=r):
+            for s in product(filter(None, _gen(items, limit)), repeat=r):
                 yield o+''.join(s)
 
 def ggen(g1, f, *args, **kwargs):
@@ -118,15 +118,14 @@ def _gen(d, limit=20, count=False):
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'max_repeat':
-            chars = filter(None, _gen(list(i[1][2]), limit))
             if i[1][1]+1 - i[1][0] >= limit:
                 ran = range(i[1][0], i[1][0]+limit)
             else:
                 ran = range(i[1][0], i[1][1]+1)
             if count:
-                for i in ran:
-                    strings += pow(len(chars), i)
-            ret = prods(ret, ran, chars)
+                for p in ran:
+                    strings += pow(_gen(list(i[1][2]), limit, True), p) or 1
+            ret = prods(ret, ran, list(i[1][2]), limit)
         elif i[0] == 'branch':
             subs = list(chain.from_iterable(_gen(list(x), limit) for x in i[1][1]))
             if count:
@@ -283,7 +282,7 @@ def __main__():
     # 'a[b][c][d]?[e]?
     args = argparser()
     if args['verbose']:
-        args['output'].write('%r%s' % (parse(args['regex'], limit=args['limit']), args['delimiter']))
+        args['output'].write('%r%s' % (parse(args['regex']), args['delimiter']))
     if args['count']:
         args['output'].write('%d%s' % (count(args['regex'], limit=args['limit']), args['delimiter']))
         exit(0)
