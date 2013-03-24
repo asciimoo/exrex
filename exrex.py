@@ -174,7 +174,7 @@ def _gen(d, limit=20, count=False):
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'assert':
-            print i[1][1]
+            print(i[1][1])
             continue
         else:
             print('[!] cannot handle expression ' + repr(i))
@@ -183,7 +183,7 @@ def _gen(d, limit=20, count=False):
         if strings == 0 and literal:
             inc = True
             for i in d:
-                if i[0] != 'literal':
+                if i[0] not in  ('at' 'literal'):
                     inc = False
             if inc:
                 strings = 1
@@ -326,8 +326,8 @@ def __main__():
         exit(0)
     try:
         g = generate(args['regex'], args['limit'])
-    except Exception, e:
-        print >> stderr, '[!] Error: ', e
+    except Exception as e:
+        stderr.write('[!] Error: %s\n' % e)
         exit(1)
     for s in g:
         try:

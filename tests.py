@@ -7,7 +7,7 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'[12]{1,2}': ['1', '2', '11', '12', '21', '22']
      ,'((hai){2}|world)!': ['haihai!', 'world!']
      ,'[ab]{1,3}': ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
-     ,'\d': map(str, range(0, 10))
+     ,'\d': list(map(str, range(0, 10)))
      ,'a[b]?(c){0,1}': ['a', 'ac', 'ab', 'abc']
      ,'(a(b(c(d(e(f))))))': ['abcdef']
      ,'(a(b(c(d(e(f){1,2}))))){1,2}': ['abcdef', 'abcdeff', 'abcdefabcdef', 'abcdeffabcdeff']
@@ -34,7 +34,7 @@ def gen_test():
             assert list(generate(regex)) == result
         except:
             err += 1
-            print '[E] Assertion error! "%s"\n\t%r != %r' % (regex, list(generate(regex)), result)
+            print('[E] Assertion error! "%s"\n\t%r != %r' % (regex, list(generate(regex)), result))
     return err
 
 def count_test():
@@ -46,27 +46,27 @@ def count_test():
             assert c == l
         except:
             err += 1
-            print '[E] Assertion error! "%s"\n\t%d != %d' % (regex, c, l)
+            print('[E] Assertion error! "%s"\n\t%d != %d' % (regex, c, l))
     return err
 
 def getone_test(tries):
     err = 0
     for regex,_ in RS.items():
-        for _ in xrange(tries):
+        for _ in range(tries):
             try:
                 s = getone(regex)
                 assert match(regex, s)
             except:
                 err += 1
-                print '[E] Assertion error! "%s"\n\t%s not match' % (regex, s)
+                print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
     for regex in BIGS:
-        for _ in xrange(tries):
+        for _ in range(tries):
             try:
                 s = getone(regex)
                 assert match(regex, s)
             except:
                 err += 1
-                print '[E] Assertion error! "%s"\n\t%s not match' % (regex, s)
+                print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
     return err
 
 
