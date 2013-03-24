@@ -86,6 +86,14 @@ def prods(orig, ran, items, limit):
             for s in product(filter(None, _gen(items, limit)), repeat=r):
                 yield o+''.join(s)
 
+def subprods(orig, ran, items, limit):
+    for o in orig:
+        for r in ran:
+            for s in _gen(items, limit):
+                if not s:
+                    continue
+                yield o+(s*r)
+
 def ggen(g1, f, *args, **kwargs):
     for a in g1:
         g2 = f(*args, **kwargs)
@@ -118,16 +126,30 @@ def _gen(d, limit=20, count=False):
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'max_repeat':
+            items = list(i[1][2])
             if i[1][1]+1 - i[1][0] >= limit:
                 ran = range(i[1][0], i[1][0]+limit)
+                r1 = i[1][0]
+                r2 = i[1][0]+limit
             else:
-                ran = range(i[1][0], i[1][1]+1)
-            if count:
-                for p in ran:
-                    strings += pow(_gen(list(i[1][2]), limit, True), p) or 1
-            ret = prods(ret, ran, list(i[1][2]), limit)
+                r1 = i[1][0]
+                r2 = i[1][1]+1
+            ran = range(r1, r2)
+            if items[0][0] != 'subpattern':
+                if count:
+                    for p in ran:
+                        strings += pow(_gen(items, limit, True), p) or 1
+                ret = prods(ret, ran, items, limit)
+            else:
+                if count:
+                    strings = (strings or 1) * _gen(items, limit, True) * (r2-r1)
+                ret = subprods(ret, ran, items, limit)
         elif i[0] == 'branch':
+            # TODO
             subs = list(chain.from_iterable(_gen(list(x), limit) for x in i[1][1]))
+            #for x in i[1][1]:
+            #    for y in _gen(list(x), limit):
+            #        ret = mappend(ret, y)
             if count:
                 strings = (strings or 1) * (len(subs) or 1)
             ret = comb(ret, subs)
