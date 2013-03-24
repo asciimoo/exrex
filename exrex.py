@@ -22,7 +22,7 @@ try:
 except:
     pass
 from re import sre_parse
-from itertools import product, chain, tee
+from itertools import product, tee
 from random import choice,randint
 
 __all__ = ('generate', 'CATEGORIES', 'count', 'parse', 'getone')
@@ -103,10 +103,17 @@ def ggen(g1, f, *args, **kwargs):
             for b in g2:
                 yield a+b
 
+def concit(g1, seqs, limit):
+    for a in g1:
+        for s in seqs:
+            for b in _gen(s, limit):
+                yield a+b
+
 def _gen(d, limit=20, count=False):
     """docstring for _gen"""
     ret = ['']
     strings = 0
+    literal = False
     for i in d:
         if i[0] == 'in':
             subs = _in(i[1])
@@ -114,6 +121,7 @@ def _gen(d, limit=20, count=False):
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'literal':
+            literal = True
             ret = mappend(ret, chr(i[1]))
         elif i[0] == 'category':
             subs = CATEGORIES.get(i[1], [''])
@@ -146,13 +154,12 @@ def _gen(d, limit=20, count=False):
                 ret = subprods(ret, ran, items, limit)
         elif i[0] == 'branch':
             # TODO
-            subs = list(chain.from_iterable(_gen(list(x), limit) for x in i[1][1]))
-            #for x in i[1][1]:
             #    for y in _gen(list(x), limit):
             #        ret = mappend(ret, y)
             if count:
-                strings = (strings or 1) * (len(subs) or 1)
-            ret = comb(ret, subs)
+                for x in i[1][1]:
+                    strings += _gen(x, limit, True)
+            ret = concit(ret, i[1][1], limit)
         elif i[0] == 'subpattern':
             if count:
                 strings = (strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True)) or 1)
@@ -173,6 +180,13 @@ def _gen(d, limit=20, count=False):
             print('[!] cannot handle expression ' + repr(i))
 
     if count:
+        if strings == 0 and literal:
+            inc = True
+            for i in d:
+                if i[0] != 'literal':
+                    inc = False
+            if inc:
+                strings = 1
         return strings
 
     return ret
@@ -190,15 +204,14 @@ def _randone(d, limit=20):
         elif i[0] == 'any':
             ret += choice(CATEGORIES['category_any'])
         elif i[0] == 'max_repeat':
-            chars = filter(None, _gen(list(i[1][2]), limit))
             if i[1][1]+1 - i[1][0] >= limit:
                 min,max = i[1][0], i[1][0]+limit
             else:
                 min,max = i[1][0], i[1][1]
             for _ in range(randint(min, max)):
-                ret += choice(chars)
+                ret += _randone(list(i[1][2]), limit)
         elif i[0] == 'branch':
-            ret += choice(list(chain.from_iterable(_gen(list(x), limit) for x in i[1][1])))
+            ret += _randone(choice(i[1][1]), limit)
         elif i[0] == 'subpattern':
             ret += _randone(i[1][1], limit)
         elif i[0] == 'at':
