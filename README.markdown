@@ -8,13 +8,26 @@ It is pure python, without external dependencies.
 
 There are regular expressions with infinite matching strings (eg.: `[a-z]+`), in these cases exrex limits the maximum length of the infinite parts.
 
+Exrex uses generators, so the memory usage does not depend on the number of matching strings.
+
 ### Documentation
 
 http://exrex.readthedocs.org/en/latest/
 
-### Install
+### Installation
 
-`easy_install exrex`
+
+To install exrex, simply:
+
+```bash
+$ pip install exrex
+```
+
+or
+
+```bash
+$ easy_install exrex
+```
 
 ### Using as python module
 
@@ -127,6 +140,10 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 ### Fun/arts
 
  * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|\.={50}| (  ){0,5}\\\.| {12}~{39})'`
+
+### Bugs
+
+Bugs or suggestions? Visit the [issue tracker](https://github.com/asciimoo/exrex/issues).
 
 ### Profiling
 
