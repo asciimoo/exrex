@@ -102,8 +102,8 @@ $ python -m exrex '[01]{10}' -c
 
  * Python3 compatibility (30%) - not works
  * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
- * Count the number of matching strings (90%)
- * Memory usage reduction (90%) - generators!
+ * Count the number of matching strings (100%?)
+ * Memory usage reduction (100%?) - generators
 
 
 ### License
