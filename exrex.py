@@ -153,9 +153,6 @@ def _gen(d, limit=20, count=False):
                     strings = (strings or 1) * _gen(items, limit, True) * (r2-r1)
                 ret = subprods(ret, ran, items, limit)
         elif i[0] == 'branch':
-            # TODO
-            #    for y in _gen(list(x), limit):
-            #        ret = mappend(ret, y)
             if count:
                 for x in i[1][1]:
                     strings += _gen(x, limit, True)
@@ -308,13 +305,6 @@ def argparser():
 
 def __main__():
     from sys import exit, stderr
-    # 'as(d|f)qw(e|r|s)[a-zA-Z]{2,3}'
-    # 'as(QWE|Z([XC]|Y|U)V){2,3}asdf'
-    # '.?'
-    # '.+'
-    # 'asdf.{1,4}qwer{2,5}'
-    # 'a(b)?(c)?(d)?'
-    # 'a[b][c][d]?[e]?
     args = argparser()
     if args['verbose']:
         args['output'].write('%r%s' % (parse(args['regex']), args['delimiter']))
@@ -329,11 +319,13 @@ def __main__():
     except Exception as e:
         stderr.write('[!] Error: %s\n' % e)
         exit(1)
-    for s in g:
-        try:
-            args['output'].write(s+args['delimiter'])
-        except:
-            break
+    try:
+        args['output'].write(g.next())
+        for s in g:
+            args['output'].write(args['delimiter'])
+            args['output'].write(s)
+    except:
+        pass
 
 if __name__ == '__main__':
     __main__()
