@@ -2,6 +2,7 @@
 
 from exrex import generate, count, getone, CATEGORIES
 from re import match
+from sys import exit
 
 RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'[12]{1,2}': ['1', '2', '11', '12', '21', '22']
@@ -19,55 +20,53 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
 BIGS = ['^a*$'
        ,'^[a-zA-Z]+$'
        ,'^(foo){3,}$'
-       ,'([^/]+)(.*)'
-       ,'[^/]+(.*)'
-       ,'([^/]+).*'
-       ,'[^asdf]+'
-       ,'([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+'
-       ,'([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+'
+       ,'^([^/]+)(.*)$'
+       ,'^[^/]+(.*)$'
+       ,'^([^/]+).*$'
+       ,'^[^asdf]+$'
+       ,'^([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+$'
+       ,'^([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+$'
+       ,'^(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M$'
        ]
 
 def gen_test():
-    err = 0
     for regex, result in RS.items():
         try:
             assert list(generate(regex)) == result
         except:
-            err += 1
             print('[E] Assertion error! "%s"\n\t%r != %r' % (regex, list(generate(regex)), result))
-    return err
+            return -1
+    return 0
 
 def count_test():
-    err = 0
     for regex, result in RS.items():
         c = count(regex)
         l = len(result)
         try:
             assert c == l
         except:
-            err += 1
             print('[E] Assertion error! "%s"\n\t%d != %d' % (regex, c, l))
-    return err
+            return -1
+    return 0
 
 def getone_test(tries):
-    err = 0
     for regex,_ in RS.items():
         for _ in range(tries):
             try:
                 s = getone(regex)
                 assert match(regex, s)
             except:
-                err += 1
                 print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
+                return -1
     for regex in BIGS:
         for _ in range(tries):
             try:
                 s = getone(regex)
                 assert match(regex, s)
             except:
-                err += 1
                 print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
-    return err
+                return -1
+    return 0
 
 
 if __name__ == '__main__':
@@ -75,14 +74,17 @@ if __name__ == '__main__':
     if errors == 0:
         print('[+] generation test passed')
     else:
-        print('[-] generation test failed\n\t%d errors' % errors)
+        print('[-] generation test failed')
+        exit(errors)
     errors = count_test()
     if errors == 0:
         print('[+] length test passed')
     else:
-        print('[-] length test failed\n\t%d errors' % errors)
+        print('[-] length test failed')
+        exit(errors)
     errors = getone_test(200)
     if errors == 0:
         print('[+] random generation test passed')
     else:
-        print('[-] random generation test failed\n\t%d errors' % errors)
+        print('[-] random generation test failed')
+        exit(errors)
