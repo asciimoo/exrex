@@ -24,6 +24,7 @@ except:
 from re import sre_parse
 from itertools import product, tee
 from random import choice,randint
+from types import GeneratorType
 
 __all__ = ('generate', 'CATEGORIES', 'count', 'parse', 'getone')
 
@@ -154,11 +155,11 @@ def subprods(orig, ran, items, limit):
 def ggen(g1, f, *args, **kwargs):
     for a in g1:
         g2 = f(*args, **kwargs)
-        if isinstance(g2, int) or isinstance(g2, long):
-            yield g2
-        else:
+        if isinstance(g2, GeneratorType):
             for b in g2:
                 yield a+b
+        else:
+            yield g2
 
 def concit(g1, seqs, limit):
     for a in g1:
