@@ -27,6 +27,7 @@ or
 
 ```bash
 $ easy_install exrex
+```
 
 ### Bugs
 
