@@ -48,6 +48,11 @@ Examples:
 ```
 
 ```python
+>>> exrex.getone('(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M')
+'09:31:40 AM'
+```
+
+```python
 >>> exrex.count('[01]{0,9}')
 1023
 ```
@@ -114,10 +119,12 @@ $ python -m exrex '[01]{10}' -c
 ### TODO
 
  * Python3 compatibility (100%)
+ * Memory usage reduction (100%?) - generators
  * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
  * Count the number of matching strings - buggy
- * Memory usage reduction (100%?) - generators
  * Extend categories (re.sre_parse.CATEGORIES) (30%)
+ * Handle grouprefs (eg.: \1 ) (0%)
+ * Improve setup.py
 
 
 ### License
@@ -141,6 +148,7 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 ### Fun/arts
 
  * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|\.={50}| (  ){0,5}\\\.| {12}~{39})'`
+ * Eyes: `python -m exrex '(o|O|0)(_)(o|O|0)'`
 
 ### Bugs
 
