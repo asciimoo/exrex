@@ -27,6 +27,10 @@ or
 
 ```bash
 $ easy_install exrex
+
+### Bugs
+
+Bugs or suggestions? Visit the [issue tracker](https://github.com/asciimoo/exrex/issues).
 ```
 
 ### Using as python module
@@ -125,6 +129,7 @@ $ python -m exrex '[01]{10}' -c
  * Extend categories (re.sre_parse.CATEGORIES) (30%)
  * Handle grouprefs (eg.: \1 ) (0%)
  * Improve setup.py
+ * More verbose code
 
 
 ### License
@@ -150,9 +155,8 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
  * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|\.={50}| (  ){0,5}\\\.| {12}~{39})'`
  * Eyes: `python -m exrex '(o|O|0)(_)(o|O|0)'`
 
-### Bugs
-
-Bugs or suggestions? Visit the [issue tracker](https://github.com/asciimoo/exrex/issues).
+### Similar projects
+ * [randexp.js](http://fent.github.com/randexp.js/)
 
 ### Profiling
 
