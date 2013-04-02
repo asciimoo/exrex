@@ -23,7 +23,7 @@ BIGS = ['^a*$'
        ,'[^/]+(.*)'
        ,'([^/]+).*'
        ,'[^asdf]+'
-       #,'([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+'
+       ,'([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+'
        ,'([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+'
        ]
 

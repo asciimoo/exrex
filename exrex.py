@@ -81,10 +81,69 @@ def _in(d):
 
 
 def prods(orig, ran, items, limit):
+    ic = _gen(items, limit, count=True)
     for o in orig:
         for r in ran:
-            for s in product(filter(None, _gen(items, limit)), repeat=r):
-                yield o+''.join(s)
+            if r == 0:
+                yield o
+            else:
+                idxs = [0]*r
+                ilen = 0
+                while True:
+                    stop = False
+                    isum = 0
+                    for i in idxs:
+                        isum += i
+                    if isum > ic:
+                        break
+                    args = []
+                    g = _gen(items, limit)
+                    # TODO filter None
+                    for i in idxs:
+                        for ii in range(i):
+                            try:
+                                v = next(g)
+                            #TODO catch only iteration exception
+                            except:
+                                stop = True
+                                break
+                        if stop == True:
+                            args.append(v)
+                            break
+                        try:
+                            v = next(g)
+                            args.append(v)
+                        #TODO catch only iteration exception
+                        except:
+                            stop = True
+                            break
+                    if len(args) < ilen:
+                        break
+                    else:
+                        ilen = len(args)
+                    nextflag = True
+                    for k,i in enumerate(reversed(idxs)):
+                        #reversed key
+                        k = r-k-1
+                        if nextflag:
+                            idxs[k] += 1
+                        if idxs[k] > ic:
+                            idxs[k] = 0
+                            nextflag = True
+                        else:
+                            nextflag = False
+                    if not len(args):
+                        continue
+                    for s in product(args, repeat=r):
+                        yield o+''.join(s)
+                    '''
+                    print args
+                    print r
+                    print stop
+                    print idxs
+                    '''
+                    if stop:
+                        break
 
 def subprods(orig, ran, items, limit):
     for o in orig:
@@ -97,7 +156,7 @@ def subprods(orig, ran, items, limit):
 def ggen(g1, f, *args, **kwargs):
     for a in g1:
         g2 = f(*args, **kwargs)
-        if isinstance(g2, int):
+        if isinstance(g2, int) or isinstance(g2, long):
             yield g2
         else:
             for b in g2:
@@ -314,13 +373,10 @@ def __main__():
     except Exception as e:
         stderr.write('[!] Error: %s\n' % e)
         exit(1)
-    try:
-        args['output'].write(g.next())
-        for s in g:
-            args['output'].write(args['delimiter'])
-            args['output'].write(s)
-    except:
-        pass
+    args['output'].write(next(g))
+    for s in g:
+        args['output'].write(args['delimiter'])
+        args['output'].write(s)
 
 if __name__ == '__main__':
     __main__()
