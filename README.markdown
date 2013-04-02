@@ -32,7 +32,6 @@ $ easy_install exrex
 ### Bugs
 
 Bugs or suggestions? Visit the [issue tracker](https://github.com/asciimoo/exrex/issues).
-```
 
 ### Using as python module
 
