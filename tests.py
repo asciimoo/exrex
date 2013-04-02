@@ -10,7 +10,7 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'\d': list(map(str, range(0, 10)))
      ,'a[b]?(c){0,1}': ['a', 'ac', 'ab', 'abc']
      ,'(a(b(c(d(e(f))))))': ['abcdef']
-     ,'(a(b(c(d(e(f){1,2}))))){1,2}': ['abcdef', 'abcdeff', 'abcdefabcdef', 'abcdeffabcdeff']
+     ,'(a(b(c(d(e(f){1,2}))))){1,2}': ['abcdef', 'abcdeff', 'abcdefabcdef', 'abcdefabcdeff', 'abcdeffabcdef', 'abcdeffabcdeff']
      ,'[^a]': [x for x in CATEGORIES['category_any'] if x != 'a']
      ,'[^asdf]': [x for x in CATEGORIES['category_any'] if x not in 'asdf']
      ,'asdf': ['asdf']
@@ -23,7 +23,7 @@ BIGS = ['^a*$'
        ,'[^/]+(.*)'
        ,'([^/]+).*'
        ,'[^asdf]+'
-       ,'([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+'
+       #,'([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+'
        ,'([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+'
        ]
 

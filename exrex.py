@@ -143,15 +143,10 @@ def _gen(d, limit=20, count=False):
                 r1 = i[1][0]
                 r2 = i[1][1]+1
             ran = range(r1, r2)
-            if items[0][0] != 'subpattern':
-                if count:
-                    for p in ran:
-                        strings += pow(_gen(items, limit, True), p) or 1
-                ret = prods(ret, ran, items, limit)
-            else:
-                if count:
-                    strings = (strings or 1) * _gen(items, limit, True) * (r2-r1)
-                ret = subprods(ret, ran, items, limit)
+            if count:
+                for p in ran:
+                    strings += pow(_gen(items, limit, True), p) or 1
+            ret = prods(ret, ran, items, limit)
         elif i[0] == 'branch':
             if count:
                 for x in i[1][1]:
