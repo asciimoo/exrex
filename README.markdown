@@ -1,18 +1,12 @@
 EXREX
 =====
 
-### Description
-
 Exrex is a command line tool and python module that generates all - or random - matching strings to a given regular expression.
 It is pure python, without external dependencies.
 
 There are regular expressions with infinite matching strings (eg.: `[a-z]+`), in these cases exrex limits the maximum length of the infinite parts.
 
 Exrex uses generators, so the memory usage does not depend on the number of matching strings.
-
-### Documentation
-
-http://exrex.readthedocs.org/en/latest/
 
 ### Installation
 
@@ -21,11 +15,9 @@ To install exrex, simply:
 
 ```bash
 $ pip install exrex
-```
 
-or
+# or
 
-```bash
 $ easy_install exrex
 ```
 
@@ -33,7 +25,10 @@ $ easy_install exrex
 
 Bugs or suggestions? Visit the [issue tracker](https://github.com/asciimoo/exrex/issues).
 
-### Using as python module
+USAGE
+=====
+
+### as python module
 
 Examples:
 
@@ -120,7 +115,13 @@ $ python -m exrex '[01]{10}' -c
 1024
 ```
 
-### TODO
+Documentation
+=============
+
+http://exrex.readthedocs.org/en/latest/
+
+TODO
+====
 
  * Python3 compatibility (100%)
  * Memory usage reduction (100%?) - generators
@@ -130,9 +131,11 @@ $ python -m exrex '[01]{10}' -c
  * Handle grouprefs (eg.: \1 ) (0%)
  * Improve setup.py
  * More verbose code
+ * Documentation
 
 
-### License
+License
+=======
 
 ```
 exrex is free software: you can redistribute it and/or modify
@@ -150,15 +153,18 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 
 (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 ```
-### Fun/arts
+Fun/arts
+========
 
  * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|\.={50}| (  ){0,5}\\\.| {12}~{39})'`
  * Eyes: `python -m exrex '(o|O|0)(_)(o|O|0)'`
 
-### Similar projects
+Similar projects
+================
  * [randexp.js](http://fent.github.com/randexp.js/)
 
 ### Profiling
+=============
 
  * `python -m cProfile exrex.py '[a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z]' -o /dev/null`
  * `python -m cProfile exrex.py '[0-9]{6}' -o /dev/null`
