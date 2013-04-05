@@ -18,11 +18,11 @@
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 try:
-    from future_builtins import map, range, filter
+    from future_builtins import map, range
 except:
     pass
 from re import sre_parse
-from itertools import product, tee
+from itertools import tee
 from random import choice,randint
 from types import GeneratorType
 
@@ -325,6 +325,8 @@ def __main__():
     for s in g:
         args['output'].write(args['delimiter'])
         args['output'].write(s)
+    if args['delimiter'] == '\n':
+        args['output'].write('\n')
 
 if __name__ == '__main__':
     __main__()
