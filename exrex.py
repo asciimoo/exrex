@@ -82,67 +82,16 @@ def _in(d):
 
 
 def prods(orig, ran, items, limit):
-    ic = _gen(items, limit, count=True)
     for o in orig:
         for r in ran:
             if r == 0:
                 yield o
             else:
-                idxs = [0]*min(r, ic)
-                while True:
-                    stop = False
-                    setit = True
-                    isum = 0
-                    previ = idxs[0]
-                    for i in idxs:
-                        if previ > i:
-                            setit = False
-                        previ = i
-                        isum += i
-                    if isum >= ic*min(r, ic)-min(r, ic):
-                        stop = True
-                    args = []
-                    if setit:
-                        for i in idxs:
-                            # TODO filter None?
-                            # TODO optimize! refactor!
-                            g = _gen(items, limit)
-                            v = next(g)
-                            for ii in range(i):
-                                try:
-                                    v = next(g)
-                                except StopIteration:
-                                    try:
-                                        g = _gen(items, limit)
-                                        v = next(g)
-                                    except StopIteration:
-                                        stop = True
-                                        break
-                            args.append(v)
-                        args = list(set(args))
-                    nextflag = True
-                    for k,i in enumerate(reversed(idxs)):
-                        #reversed key
-                        k = min(r,ic)-k-1
-                        if nextflag:
-                            idxs[k] += 1
-                        if idxs[k] >= ic:
-                            idxs[k] = 0
-                            nextflag = True
-                        else:
-                            nextflag = False
-                    for s in product(args, repeat=r):
-                        if len(s) and all(s[0] == x for x in s) and len(args) != 1:
-                            continue
-                        yield o+''.join(s)
-                    '''
-                    print args
-                    print r
-                    print stop
-                    print idxs
-                    '''
-                    if stop:
-                        break
+                ret = [o]
+                for _ in range(r):
+                    ret = ggen(ret, _gen, items, limit=limit, count=False)
+                for i in ret:
+                    yield i
 
 def subprods(orig, ran, items, limit):
     for o in orig:

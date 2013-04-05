@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'exrex',
-    version = '0.8.4',
+    version = '0.8.5',
     author = 'Adam Tauber',
     author_email = 'asciimoo@gmail.com',
     description = ('Exrex is a tool and python module that generates all - or random - matching strings to a given regular expression.'),
