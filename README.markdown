@@ -30,8 +30,6 @@ USAGE
 
 ### as python module
 
-Examples:
-
 ```python
 >>> import exrex
 ```
@@ -54,11 +52,6 @@ Examples:
 ```python
 >>> exrex.count('[01]{0,9}')
 1023
-```
-
-```python
->>> list(exrex.generate('[ab]{1,3}'))
-['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
 ```
 
 ```python
