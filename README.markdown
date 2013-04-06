@@ -15,9 +15,11 @@ To install exrex, simply:
 
 ```bash
 $ pip install exrex
+```
 
-# or
+or
 
+```bash
 $ easy_install exrex
 ```
 
@@ -32,29 +34,19 @@ USAGE
 
 ```python
 >>> import exrex
-```
 
-```python
 >>> [x for x in exrex.generate('((hai){2}|world)!')]
 ['haihai!', 'world!']
-```
 
-```python
 >>> exrex.getone('\d{4}-\d{4}-\d{4}-[0-9]{4}')
 '3096-7886-2834-5671'
-```
 
-```python
 >>> exrex.getone('(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M')
 '09:31:40 AM'
-```
 
-```python
 >>> exrex.count('[01]{0,9}')
 1023
-```
 
-```python
 >>> print '\n'.join(exrex.generate('This is (a (code|cake|test)|an (apple|elf|output))\.'))
 This is a code.
 This is a cake.
@@ -96,14 +88,9 @@ d
 f
 g
 
-```
-
-```
 $ python -m exrex -r '(0[1-9]|1[012])-\d{2}'
 09-85
-```
 
-```
 $ python -m exrex '[01]{10}' -c
 1024
 ```
@@ -156,7 +143,7 @@ Similar projects
 ================
  * [randexp.js](http://fent.github.com/randexp.js/)
 
-### Profiling
+Profiling
 =============
 
  * `python -m cProfile exrex.py '[a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z]' -o /dev/null`
