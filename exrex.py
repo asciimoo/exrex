@@ -93,14 +93,6 @@ def prods(orig, ran, items, limit):
                 for i in ret:
                     yield i
 
-def subprods(orig, ran, items, limit):
-    for o in orig:
-        for r in ran:
-            for s in _gen(items, limit):
-                if not s:
-                    continue
-                yield o+(s*r)
-
 def ggen(g1, f, *args, **kwargs):
     for a in g1:
         g2 = f(*args, **kwargs)
