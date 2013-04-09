@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # This file is part of exrex.
 #
@@ -21,7 +22,7 @@ try:
     from future_builtins import map, range
 except:
     pass
-from re import sre_parse
+from re import sre_parse, U
 from itertools import tee
 from random import choice,randint
 from types import GeneratorType
@@ -30,7 +31,7 @@ __all__ = ('generate', 'CATEGORIES', 'count', 'parse', 'getone')
 
 CATEGORIES = {'category_space'  : sorted(sre_parse.WHITESPACE)
              ,'category_digit'  : sorted(sre_parse.DIGITS)
-             ,'category_any'    : [chr(x) for x in range(32, 123)]
+             ,'category_any'    : [unichr(x) for x in range(32, 123)]
              }
 
 def comb(g, i):
@@ -48,7 +49,7 @@ def _in(d):
     neg = False
     for i in d:
         if i[0] == 'range':
-            subs = map(chr, range(i[1][0], i[1][1]+1))
+            subs = map(unichr, range(i[1][0], i[1][1]+1))
             if neg:
                 for char in subs:
                     try:
@@ -60,13 +61,13 @@ def _in(d):
         elif i[0] == 'literal':
             if neg:
                 try:
-                    ret.remove(chr(i[1]))
+                    ret.remove(unichr(i[1]))
                 except:
                     pass
             else:
-                ret.append(chr(i[1]))
+                ret.append(unichr(i[1]))
         elif i[0] == 'category':
-            subs = CATEGORIES.get(i[1], [''])
+            subs = CATEGORIES.get(i[1], [u''])
             if neg:
                 for char in subs:
                     try:
@@ -110,7 +111,7 @@ def concit(g1, seqs, limit):
 
 def _gen(d, limit=20, count=False):
     """docstring for _gen"""
-    ret = ['']
+    ret = [u'']
     strings = 0
     literal = False
     for i in d:
@@ -121,9 +122,9 @@ def _gen(d, limit=20, count=False):
             ret = comb(ret, subs)
         elif i[0] == 'literal':
             literal = True
-            ret = mappend(ret, chr(i[1]))
+            ret = mappend(ret, unichr(i[1]))
         elif i[0] == 'category':
-            subs = CATEGORIES.get(i[1], [''])
+            subs = CATEGORIES.get(i[1], [u''])
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
@@ -160,7 +161,7 @@ def _gen(d, limit=20, count=False):
             continue
         elif i[0] == 'not_literal':
             subs = list(CATEGORIES['category_any'])
-            subs.remove(chr(i[1]))
+            subs.remove(unichr(i[1]))
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
@@ -184,14 +185,14 @@ def _gen(d, limit=20, count=False):
 
 def _randone(d, limit=20):
     """docstring for _randone"""
-    ret = ''
+    ret = u''
     for i in d:
         if i[0] == 'in':
             ret += choice(_in(i[1]))
         elif i[0] == 'literal':
-            ret += chr(i[1])
+            ret += unichr(i[1])
         elif i[0] == 'category':
-            ret += choice(CATEGORIES.get(i[1], ['']))
+            ret += choice(CATEGORIES.get(i[1], [u'']))
         elif i[0] == 'any':
             ret += choice(CATEGORIES['category_any'])
         elif i[0] == 'max_repeat':
@@ -209,7 +210,7 @@ def _randone(d, limit=20):
             continue
         elif i[0] == 'not_literal':
             c=list(CATEGORIES['category_any'])
-            c.remove(chr(i[1]))
+            c.remove(unichr(i[1]))
             ret += choice(c)
         else:
             print('[!] cannot handle expression "%s"' % str(i))
@@ -224,7 +225,7 @@ def parse(s):
     :type s: str
     :rtype: list
     """
-    r = sre_parse.parse(s)
+    r = sre_parse.parse(s.decode('utf-8'), flags=U)
     return list(r)
 
 def generate(s, limit=20):

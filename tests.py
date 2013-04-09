@@ -1,7 +1,25 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+# This file is part of exrex.
+#
+# exrex is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# exrex is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with exrex. If not, see < http://www.gnu.org/licenses/ >.
+#
+# (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 from exrex import generate, count, getone, CATEGORIES
-from re import match
+import re
 from sys import exit
 
 RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
@@ -15,6 +33,7 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'[^a]': [x for x in CATEGORIES['category_any'] if x != 'a']
      ,'[^asdf]': [x for x in CATEGORIES['category_any'] if x not in 'asdf']
      ,'asdf': ['asdf']
+     ,'[áíő]': [u'á', u'í', u'ő']
      }
 
 BIGS = ['^a*$'
@@ -45,7 +64,7 @@ def count_test():
         try:
             assert c == l
         except:
-            print('[E] Assertion error! "%s"\n\t%d != %d' % (regex, c, l))
+            print('[E] Assertion error! "%u"\n\t%d != %d' % (regex.decode('utf-8'), c, l))
             return -1
     return 0
 
@@ -54,17 +73,17 @@ def getone_test(tries):
         for _ in range(tries):
             try:
                 s = getone(regex)
-                assert match(regex, s)
-            except:
-                print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
+                assert re.match(regex, s.encode('utf-8'), re.U)
+            except Exception as e:
+                print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
                 return -1
     for regex in BIGS:
         for _ in range(tries):
             try:
                 s = getone(regex)
-                assert match(regex, s)
+                assert re.match(regex, s.encode('utf-8'), re.U)
             except:
-                print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
+                print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
                 return -1
     return 0
 
