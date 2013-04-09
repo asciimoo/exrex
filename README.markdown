@@ -105,8 +105,8 @@ TODO
 
  * Python3 compatibility (100%)
  * Memory usage reduction (100%?) - generators
+ * Count the number of matching strings - (100%?)
  * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
- * Count the number of matching strings - buggy
  * Extend categories (re.sre_parse.CATEGORIES) (30%)
  * Handle grouprefs (eg.: \1 ) (0%)
  * Improve setup.py
