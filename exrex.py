@@ -166,8 +166,11 @@ def _gen(d, limit=20, count=False):
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
         elif i[0] == 'assert':
-            print(i[1][1])
-            continue
+            #print(i[1][1])
+            #continue
+            pass
+        elif i[0] == 'assert_not':
+            pass
         else:
             print('[!] cannot handle expression ' + repr(i))
 
@@ -212,6 +215,10 @@ def _randone(d, limit=20):
             c=list(CATEGORIES['category_any'])
             c.remove(unichr(i[1]))
             ret += choice(c)
+        elif i[0] == 'assert':
+            pass
+        elif i[0] == 'assert_not':
+            pass
         else:
             print('[!] cannot handle expression "%s"' % str(i))
 
