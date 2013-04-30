@@ -108,11 +108,11 @@ http://exrex.readthedocs.org/en/latest/
 TODO
 ====
 
- * Python3 compatibility (100%)
  * Memory usage reduction (100%?) - generators
  * Count the number of matching strings - (100%?)
  * Unicode support (100%)
  * Handle grouprefs (100%)
+ * Python3 compatibility (80%)
  * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
  * Extend categories (re.sre_parse.CATEGORIES) (30%)
  * Improve setup.py
