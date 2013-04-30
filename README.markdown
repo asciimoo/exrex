@@ -80,7 +80,11 @@ optional arguments:
 ```
 
 Examples:
+
 ```
+$ python -m exrex '(ex)r\1'
+exrex
+
 $ python -m exrex '[asdfg]'
 a
 s
@@ -93,6 +97,7 @@ $ python -m exrex -r '(0[1-9]|1[012])-\d{2}'
 
 $ python -m exrex '[01]{10}' -c
 1024
+
 ```
 
 Documentation
@@ -107,9 +112,9 @@ TODO
  * Memory usage reduction (100%?) - generators
  * Count the number of matching strings - (100%?)
  * Unicode support (100%)
+ * Handle grouprefs (100%)
  * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
  * Extend categories (re.sre_parse.CATEGORIES) (30%)
- * Handle grouprefs (eg.: \1 ) (0%)
  * Improve setup.py
  * More verbose code
  * Documentation

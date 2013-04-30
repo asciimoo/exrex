@@ -34,6 +34,7 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'[^asdf]': [x for x in CATEGORIES['category_any'] if x not in 'asdf']
      ,'asdf': ['asdf']
      ,'[áíő]': [u'á', u'í', u'ő']
+     ,'(a|b)(1|2)\\1\\2\\1\\2': ['a1a1a1', 'a2a2a2', 'b1b1b1', 'b2b2b2']
      }
 
 BIGS = ['^a*$'
@@ -64,7 +65,7 @@ def count_test():
         try:
             assert c == l
         except:
-            print('[E] Assertion error! "%u"\n\t%d != %d' % (regex.decode('utf-8'), c, l))
+            print('[E] Assertion error! "%s"\n\t%d != %d' % (regex.decode('utf-8'), c, l))
             return -1
     return 0
 
@@ -74,7 +75,7 @@ def getone_test(tries):
             try:
                 s = getone(regex)
                 assert re.match(regex, s.encode('utf-8'), re.U)
-            except Exception as e:
+            except Exception:
                 print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
                 return -1
     for regex in BIGS:

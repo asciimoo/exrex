@@ -44,6 +44,10 @@ def mappend(g, c):
     for cc in g:
         yield cc+c
 
+def dappend(g, d, k):
+    for cc in g:
+        yield cc+d[k]
+
 def _in(d):
     ret = []
     neg = False
@@ -67,7 +71,7 @@ def _in(d):
             else:
                 ret.append(unichr(i[1]))
         elif i[0] == 'category':
-            subs = CATEGORIES.get(i[1], [u''])
+            subs = CATEGORIES.get(i[1], [''])
             if neg:
                 for char in subs:
                     try:
@@ -82,7 +86,7 @@ def _in(d):
     return ret
 
 
-def prods(orig, ran, items, limit):
+def prods(orig, ran, items, limit, grouprefs):
     for o in orig:
         for r in ran:
             if r == 0:
@@ -90,28 +94,35 @@ def prods(orig, ran, items, limit):
             else:
                 ret = [o]
                 for _ in range(r):
-                    ret = ggen(ret, _gen, items, limit=limit, count=False)
+                    ret = ggen(ret, _gen, items, limit=limit, count=False, grouprefs=grouprefs)
                 for i in ret:
                     yield i
 
 def ggen(g1, f, *args, **kwargs):
+    groupref = None
+    grouprefs = kwargs.get('grouprefs', {})
+    if kwargs.has_key('groupref'):
+        groupref = kwargs.pop('groupref')
     for a in g1:
         g2 = f(*args, **kwargs)
         if isinstance(g2, GeneratorType):
             for b in g2:
+                grouprefs[groupref] = b
                 yield a+b
         else:
             yield g2
 
-def concit(g1, seqs, limit):
+def concit(g1, seqs, limit, grouprefs):
     for a in g1:
         for s in seqs:
-            for b in _gen(s, limit):
+            for b in _gen(s, limit, grouprefs=grouprefs):
                 yield a+b
 
-def _gen(d, limit=20, count=False):
+def _gen(d, limit=20, count=False, grouprefs=None):
     """docstring for _gen"""
-    ret = [u'']
+    if grouprefs == None:
+        grouprefs = {}
+    ret = ['']
     strings = 0
     literal = False
     for i in d:
@@ -124,7 +135,7 @@ def _gen(d, limit=20, count=False):
             literal = True
             ret = mappend(ret, unichr(i[1]))
         elif i[0] == 'category':
-            subs = CATEGORIES.get(i[1], [u''])
+            subs = CATEGORIES.get(i[1], [''])
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
@@ -145,17 +156,17 @@ def _gen(d, limit=20, count=False):
             ran = range(r1, r2)
             if count:
                 for p in ran:
-                    strings += pow(_gen(items, limit, True), p) or 1
-            ret = prods(ret, ran, items, limit)
+                    strings += pow(_gen(items, limit, True,grouprefs), p) or 1
+            ret = prods(ret, ran, items, limit, grouprefs)
         elif i[0] == 'branch':
             if count:
                 for x in i[1][1]:
-                    strings += _gen(x, limit, True)
-            ret = concit(ret, i[1][1], limit)
+                    strings += _gen(x, limit, True,grouprefs)
+            ret = concit(ret, i[1][1], limit, grouprefs)
         elif i[0] == 'subpattern':
             if count:
-                strings = (strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True)) or 1)
-            ret = ggen(ret, _gen, i[1][1], limit=limit, count=False)
+                strings = (strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True, grouprefs=grouprefs)) or 1)
+            ret = ggen(ret, _gen, i[1][1], limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
         # ignore ^ and $
         elif i[0] == 'at':
             continue
@@ -165,6 +176,8 @@ def _gen(d, limit=20, count=False):
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
+        elif i[0] == 'groupref':
+            ret = dappend(ret, grouprefs, i[1])
         elif i[0] == 'assert':
             #print(i[1][1])
             #continue
@@ -186,16 +199,18 @@ def _gen(d, limit=20, count=False):
 
     return ret
 
-def _randone(d, limit=20):
+def _randone(d, limit=20, grouprefs=None):
+    if grouprefs == None:
+        grouprefs = {}
     """docstring for _randone"""
-    ret = u''
+    ret = ''
     for i in d:
         if i[0] == 'in':
             ret += choice(_in(i[1]))
         elif i[0] == 'literal':
             ret += unichr(i[1])
         elif i[0] == 'category':
-            ret += choice(CATEGORIES.get(i[1], [u'']))
+            ret += choice(CATEGORIES.get(i[1], ['']))
         elif i[0] == 'any':
             ret += choice(CATEGORIES['category_any'])
         elif i[0] == 'max_repeat':
@@ -204,17 +219,22 @@ def _randone(d, limit=20):
             else:
                 min,max = i[1][0], i[1][1]
             for _ in range(randint(min, max)):
-                ret += _randone(list(i[1][2]), limit)
+                ret += _randone(list(i[1][2]), limit, grouprefs)
         elif i[0] == 'branch':
-            ret += _randone(choice(i[1][1]), limit)
+            ret += _randone(choice(i[1][1]), limit, grouprefs)
         elif i[0] == 'subpattern':
-            ret += _randone(i[1][1], limit)
+            subp = _randone(i[1][1], limit, grouprefs)
+            if i[1][0]:
+                grouprefs[i[1][0]] = subp
+            ret += subp
         elif i[0] == 'at':
             continue
         elif i[0] == 'not_literal':
             c=list(CATEGORIES['category_any'])
             c.remove(unichr(i[1]))
             ret += choice(c)
+        elif i[0] == 'groupref':
+            ret += grouprefs[i[1]]
         elif i[0] == 'assert':
             pass
         elif i[0] == 'assert_not':
