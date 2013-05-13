@@ -20,7 +20,8 @@
 
 from exrex import generate, count, getone, CATEGORIES
 import re
-from sys import exit
+from sys import exit, version_info
+IS_PY3 = version_info[0] == 3
 
 RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'[12]{1,2}': ['1', '2', '11', '12', '21', '22']
@@ -47,6 +48,7 @@ BIGS = ['^a*$'
        ,'^([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+$'
        ,'^([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+$'
        ,'^(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M$'
+       ,'(.*)\\1'
        ]
 
 def gen_test():
@@ -65,8 +67,12 @@ def count_test():
         try:
             assert c == l
         except:
-            print('[E] Assertion error! "%s"\n\t%d != %d' % (regex.decode('utf-8'), c, l))
-            return -1
+            if IS_PY3:
+                print('[E] Assertion error! "%s"\n\t%d != %d' % (regex, c, l))
+                return -1
+            else:
+                print('[E] Assertion error! "%s"\n\t%d != %d' % (regex.decode('utf-8'), c, l))
+                return -1
     return 0
 
 def getone_test(tries):
@@ -74,18 +80,32 @@ def getone_test(tries):
         for _ in range(tries):
             try:
                 s = getone(regex)
-                assert re.match(regex, s.encode('utf-8'), re.U)
+                if IS_PY3:
+                    assert re.match(regex, s, re.U)
+                else:
+                    assert re.match(regex, s.encode('utf-8'), re.U)
             except Exception:
-                print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
-                return -1
+                if IS_PY3:
+                    print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
+                    return -1
+                else:
+                    print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
+                    return -1
     for regex in BIGS:
         for _ in range(tries):
             try:
                 s = getone(regex)
-                assert re.match(regex, s.encode('utf-8'), re.U)
+                if IS_PY3:
+                    assert re.match(regex, s, re.U)
+                else:
+                    assert re.match(regex, s.encode('utf-8'), re.U)
             except:
-                print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
-                return -1
+                if IS_PY3:
+                    print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
+                    return -1
+                else:
+                    print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
+                    return -1
     return 0
 
 

@@ -27,6 +27,12 @@ from itertools import tee
 from random import choice,randint
 from types import GeneratorType
 
+from sys import version_info
+IS_PY3 = version_info[0] == 3
+
+if IS_PY3:
+    unichr = chr
+
 __all__ = ('generate', 'CATEGORIES', 'count', 'parse', 'getone')
 
 CATEGORIES = {'category_space'  : sorted(sre_parse.WHITESPACE)
@@ -101,7 +107,7 @@ def prods(orig, ran, items, limit, grouprefs):
 def ggen(g1, f, *args, **kwargs):
     groupref = None
     grouprefs = kwargs.get('grouprefs', {})
-    if kwargs.has_key('groupref'):
+    if 'groupref' in kwargs.keys():
         groupref = kwargs.pop('groupref')
     for a in g1:
         g2 = f(*args, **kwargs)
@@ -252,7 +258,10 @@ def parse(s):
     :type s: str
     :rtype: list
     """
-    r = sre_parse.parse(s.decode('utf-8'), flags=U)
+    if IS_PY3:
+        r = sre_parse.parse(s, flags=U)
+    else:
+        r = sre_parse.parse(s.decode('utf-8'), flags=U)
     return list(r)
 
 def generate(s, limit=20):
