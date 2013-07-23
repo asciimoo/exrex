@@ -314,6 +314,13 @@ def argparser():
                      ,default   = False
                      ,action    = 'store_true'
                      )
+    argp.add_argument('-m', '--max-number'
+                     ,help      = 'Max number of strings - default is -1'
+                     ,default   = -1
+                     ,action    = 'store'
+                     ,type      = int
+                     ,metavar   = 'N'
+                     )
     argp.add_argument('-r', '--random'
                      ,help      = 'Returns a random string that matches to the regex'
                      ,default   = False
@@ -351,7 +358,11 @@ def __main__():
         stderr.write('[!] Error: %s\n' % e)
         exit(1)
     args['output'].write(next(g))
+    args['max_number'] -= 1
     for s in g:
+        if args['max_number'] == 0:
+            break
+        args['max_number'] -= 1
         args['output'].write(args['delimiter'])
         args['output'].write(s)
     if args['delimiter'] == '\n':
