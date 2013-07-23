@@ -71,8 +71,9 @@ optional arguments:
   -h, --help            show this help message and exit
   -o FILE, --output FILE
                         Output file - default is STDOUT
-  -l, --limit           Max limit for range size - default is 20
+  -l N, --limit N       Max limit for range size - default is 20
   -c, --count           Count matching strings
+  -m N, --max-number N  Max number of strings - default is -1
   -r, --random          Returns a random string that matches to the regex
   -d DELIMITER, --delimiter DELIMITER
                         Delimiter - default is \n
