@@ -34,6 +34,7 @@ RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
      ,'[^a]': [x for x in CATEGORIES['category_any'] if x != 'a']
      ,'[^asdf]': [x for x in CATEGORIES['category_any'] if x not in 'asdf']
      ,'asdf': ['asdf']
+     ,'(as|df)': ['as', 'df']
      ,'[áíő]': [u'á', u'í', u'ő']
      ,'(a|b)(1|2)\\1\\2\\1\\2': ['a1a1a1', 'a2a2a2', 'b1b1b1', 'b2b2b2']
      }
