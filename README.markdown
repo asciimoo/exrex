@@ -109,16 +109,16 @@ http://exrex.readthedocs.org/en/latest/
 TODO
 ====
 
+ * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
+ * Extend categories (`re.sre_parse.CATEGORIES`) (30%)
+ * Improve setup.py
+ * More verbose code
+ * Documentation
  * Memory usage reduction (100%?) - generators
  * Count the number of matching strings - (100%?)
  * Unicode support (100%)
  * Handle grouprefs (100%)
  * Python3 compatibility (100%) ( >= python3.3)
- * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
- * Extend categories (re.sre_parse.CATEGORIES) (30%)
- * Improve setup.py
- * More verbose code
- * Documentation
 
 
 License
@@ -149,6 +149,7 @@ Fun/arts
 Similar projects
 ================
  * [randexp.js](http://fent.github.com/randexp.js/)
+ * [regldg](http://regldg.com/)
 
 Profiling
 =============
