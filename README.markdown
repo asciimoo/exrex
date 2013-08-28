@@ -8,26 +8,15 @@ There are regular expressions with infinite matching strings (eg.: `[a-z]+`), in
 
 Exrex uses generators, so the memory usage does not depend on the number of matching strings.
 
-### Installation
+*Features*
 
+ * Generating all matching string
+ * Generating a random matching string
+ * Counting the number of matching strings
+ * [Groupref](http://www.regular-expressions.info/brackets.html) handling
+ * Full unicode support
 
-To install exrex, simply:
-
-```bash
-$ pip install exrex
-```
-
-or
-
-```bash
-$ easy_install exrex
-```
-
-### Bugs
-
-Bugs or suggestions? Visit the [issue tracker](https://github.com/asciimoo/exrex/issues).
-
-USAGE
+Usage
 =====
 
 ### as python module
@@ -35,8 +24,11 @@ USAGE
 ```python
 >>> import exrex
 
->>> [x for x in exrex.generate('((hai){2}|world)!')]
-['haihai!', 'world!']
+>>>exrex.getone('(ex)r\\1')
+exrex
+
+>>> list(exrex.generate('((hai){2}|world!)'))
+['haihai', 'world!']
 
 >>> exrex.getone('\d{4}-\d{4}-\d{4}-[0-9]{4}')
 '3096-7886-2834-5671'
@@ -83,9 +75,6 @@ optional arguments:
 Examples:
 
 ```
-$ python -m exrex '(ex)r\1'
-exrex
-
 $ python -m exrex '[asdfg]'
 a
 s
@@ -101,19 +90,40 @@ $ python -m exrex '[01]{10}' -c
 
 ```
 
-Documentation
-=============
+### Installation
+
+
+To install exrex, simply:
+
+```bash
+$ pip install exrex
+```
+
+or
+
+```bash
+$ easy_install exrex
+```
+
+
+### Bugs
+
+Bugs or suggestions? Visit the [issue tracker](https://github.com/asciimoo/exrex/issues).
+
+
+### Documentation
 
 http://exrex.readthedocs.org/en/latest/
 
-TODO
-====
+### TODO
 
  * Command line switches to change default character sets/ranges/range limits (eg. for '.','\s'..) (40%)
  * Extend categories (`re.sre_parse.CATEGORIES`) (30%)
  * Improve setup.py
  * More verbose code
  * Documentation
+ * Optimizations
+ * Generation of `n` different random matching string
  * Memory usage reduction (100%?) - generators
  * Count the number of matching strings - (100%?)
  * Unicode support (100%)
@@ -121,8 +131,7 @@ TODO
  * Python3 compatibility (100%) ( >= python3.3)
 
 
-License
-=======
+### License
 
 ```
 exrex is free software: you can redistribute it and/or modify
@@ -140,19 +149,18 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 
 (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 ```
-Fun/arts
-========
+
+### Fun/arts
 
  * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|\.={50}| (  ){0,5}\\\.| {12}~{39})'`
  * Eyes: `python -m exrex '(o|O|0)(_)(o|O|0)'`
 
-Similar projects
-================
+### Similar projects
+
  * [randexp.js](http://fent.github.com/randexp.js/)
  * [regldg](http://regldg.com/)
 
-Profiling
-=============
+### Profiling
 
  * `python -m cProfile exrex.py '[a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z]' -o /dev/null`
  * `python -m cProfile exrex.py '[0-9]{6}' -o /dev/null`
