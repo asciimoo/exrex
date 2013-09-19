@@ -8,6 +8,8 @@ There are regular expressions with infinite matching strings (eg.: `[a-z]+`), in
 
 Exrex uses generators, so the memory usage does not depend on the number of matching strings.
 
+[![Version](https://pypip.in/v/exrex/badge.png)](https://crate.io/packages/exrex/)   [![Downloads](https://pypip.in/d/exrex/badge.png)](https://crate.io/packages/exrex/)
+
 *Features*
 
  * Generating all matching string
