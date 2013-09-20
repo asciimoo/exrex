@@ -161,6 +161,7 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 
  * [randexp.js](http://fent.github.com/randexp.js/)
  * [regldg](http://regldg.com/)
+ * [regex-genex](https://github.com/audreyt/regex-genex)
 
 ### Profiling
 
