@@ -53,7 +53,7 @@ This is an output.
 ### Command line usage
 
 ```
-> python -m exrex --help
+> exrex --help
 usage: exrex.py [-h] [-o FILE] [-l] [-d DELIMITER] [-v] REGEX
 
 exrex - regular expression string generator
@@ -77,17 +77,17 @@ optional arguments:
 Examples:
 
 ```
-$ python -m exrex '[asdfg]'
+$ exrex '[asdfg]'
 a
 s
 d
 f
 g
 
-$ python -m exrex -r '(0[1-9]|1[012])-\d{2}'
+$ exrex -r '(0[1-9]|1[012])-\d{2}'
 09-85
 
-$ python -m exrex '[01]{10}' -c
+$ exrex '[01]{10}' -c
 1024
 
 ```
@@ -154,8 +154,8 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 
 ### Fun/arts
 
- * Boat: `python -m exrex '( {20}(\| *\\|-{22}|\|)|\.={50}| (  ){0,5}\\\.| {12}~{39})'`
- * Eyes: `python -m exrex '(o|O|0)(_)(o|O|0)'`
+ * Boat: `exrex '( {20}(\| *\\|-{22}|\|)|\.={50}| (  ){0,5}\\\.| {12}~{39})'`
+ * Eyes: `exrex '(o|O|0)(_)(o|O|0)'`
 
 ### Similar projects
 
