@@ -26,8 +26,8 @@ Usage
 ```python
 >>> import exrex
 
->>>exrex.getone('(ex)r\\1')
-exrex
+>>> exrex.getone('(ex)r\\1')
+'exrex'
 
 >>> list(exrex.generate('((hai){2}|world!)'))
 ['haihai', 'world!']
