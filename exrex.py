@@ -33,7 +33,13 @@ IS_PY3 = version_info[0] == 3
 if IS_PY3:
     unichr = chr
 
-__all__ = ('generate', 'CATEGORIES', 'count', 'parse', 'getone')
+__all__ = ('generate',
+           'CATEGORIES',
+           'count',
+           'parse',
+           'getone',
+           'sre_to_string',
+           'simplify')
 
 CATEGORIES = {'category_space'  : sorted(sre_parse.WHITESPACE)
              ,'category_digit'  : sorted(sre_parse.DIGITS)
@@ -257,7 +263,7 @@ def _randone(d, limit=20, grouprefs=None):
     return ret
 
 
-def to_string(sre_obj, paren=True):
+def sre_to_string(sre_obj, paren=True):
     """sre_parse object to string
 
     :param sre_obj: Output of sre_parse.parse()
@@ -270,7 +276,7 @@ def to_string(sre_obj, paren=True):
             prefix = ''
             if len(i[1]) and i[1][0][0] == 'negate':
                 prefix = '^'
-            ret += u'[{0}{1}]'.format(prefix, to_string(i[1], paren=paren))
+            ret += u'[{0}{1}]'.format(prefix, sre_to_string(i[1], paren=paren))
         elif i[0] == 'literal':
             ret += unichr(i[1])
         elif i[0] == 'category':
@@ -279,7 +285,7 @@ def to_string(sre_obj, paren=True):
             ret += '.'
         elif i[0] in 'branch':
             # TODO simplifications here
-            parts = [to_string(x, paren=paren) for x in  i[1][1]]
+            parts = [sre_to_string(x, paren=paren) for x in  i[1][1]]
             if not any(parts):
                 continue
             if i[1][0]:
@@ -295,9 +301,9 @@ def to_string(sre_obj, paren=True):
                 ret += '{0}'.format(branch)
         elif i[0] == 'subpattern':
             if i[1][0]:
-                ret += '({0})'.format(to_string(i[1][1], paren=False))
+                ret += '({0})'.format(sre_to_string(i[1][1], paren=False))
             else:
-                ret += '{0}'.format(to_string(i[1][1], paren=paren))
+                ret += '{0}'.format(sre_to_string(i[1][1], paren=paren))
         elif i[0] == 'not_literal':
             ret += '[^{0}]'.format(unichr(i[1]))
         elif i[0] == 'max_repeat':
@@ -310,7 +316,7 @@ def to_string(sre_obj, paren=True):
                     range_str = '+'
                 else:
                     range_str = '{{{0},{1}}}'.format(i[1][0], i[1][1])
-            ret += to_string(i[1][2], paren=paren)+range_str
+            ret += sre_to_string(i[1][2], paren=paren)+range_str
         elif i[0] == 'groupref':
             ret += '\\{0}'.format(i[1])
         elif i[0] == 'at':
@@ -329,6 +335,17 @@ def to_string(sre_obj, paren=True):
         else:
             print('[!] cannot handle expression "%s"' % str(i))
     return ret
+
+
+def simplify(regex_string):
+    """Simplify a regular expression
+
+    :param regex_string: Regular expression
+    :type regex_string: str
+    :rtype: str
+    """
+    r = parse(regex_string)
+    return sre_to_string(r)
 
 
 def parse(s):
