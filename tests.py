@@ -18,7 +18,7 @@
 #
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
-from exrex import generate, count, getone, CATEGORIES
+from exrex import generate, count, getone, CATEGORIES, simplify
 import re
 from sys import exit, version_info
 IS_PY3 = version_info[0] == 3
@@ -76,7 +76,7 @@ def count_test():
                 return -1
     return 0
 
-def getone_test(tries):
+def getone_test(tries=200):
     for regex,_ in RS.items():
         for _ in range(tries):
             try:
@@ -110,22 +110,28 @@ def getone_test(tries):
     return 0
 
 
+def simplify_test():
+    for regex, result in RS.items():
+        new_regex = simplify(regex)
+        if not IS_PY3:
+            new_regex = new_regex.encode('utf-8')
+        r = list(generate(new_regex))
+        try:
+            assert r == result
+        except:
+            print('[E] Assertion error! "%s"\n\t%r != %r' % (regex, r, result))
+            return -1
+
+
 if __name__ == '__main__':
-    errors = gen_test()
-    if errors == 0:
-        print('[+] generation test passed')
-    else:
-        print('[-] generation test failed')
-        exit(errors)
-    errors = count_test()
-    if errors == 0:
-        print('[+] length test passed')
-    else:
-        print('[-] length test failed')
-        exit(errors)
-    errors = getone_test(200)
-    if errors == 0:
-        print('[+] random generation test passed')
-    else:
-        print('[-] random generation test failed')
-        exit(errors)
+    tests = {'generation': gen_test,
+             'count': count_test,
+             'random generation': getone_test,
+             'simplification': simplify_test}
+    for i, (test_name, test) in enumerate(tests.items()):
+        errors = test()
+        if not errors:
+            print('[+] {0} test passed'.format(test_name))
+        else:
+            print('[-] {0} test failed'.format(test_name))
+            exit(i+1)
