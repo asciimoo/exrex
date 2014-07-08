@@ -40,6 +40,12 @@ CATEGORIES = {'category_space'  : sorted(sre_parse.WHITESPACE)
              ,'category_any'    : [unichr(x) for x in range(32, 123)]
              }
 
+REVERSE_CATEGORIES = {vv[1]:k for k,v
+                      in sre_parse.CATEGORIES.items() for vv
+                      in v[1]
+                      if v[0] == 'in' and vv[0] == 'category'}
+
+
 def comb(g, i):
     for c in g:
         g2,i = tee(i)
