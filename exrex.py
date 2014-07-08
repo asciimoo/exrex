@@ -58,13 +58,16 @@ def comb(g, i):
         for c2 in g2:
             yield c+c2
 
+
 def mappend(g, c):
     for cc in g:
         yield cc+c
 
+
 def dappend(g, d, k):
     for cc in g:
         yield cc+d[k]
+
 
 def _in(d):
     ret = []
@@ -116,6 +119,7 @@ def prods(orig, ran, items, limit, grouprefs):
                 for i in ret:
                     yield i
 
+
 def ggen(g1, f, *args, **kwargs):
     groupref = None
     grouprefs = kwargs.get('grouprefs', {})
@@ -130,11 +134,13 @@ def ggen(g1, f, *args, **kwargs):
         else:
             yield g2
 
+
 def concit(g1, seqs, limit, grouprefs):
     for a in g1:
         for s in seqs:
             for b in _gen(s, limit, grouprefs=grouprefs):
                 yield a+b
+
 
 def _gen(d, limit=20, count=False, grouprefs=None):
     """docstring for _gen"""
@@ -216,6 +222,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
         return strings
 
     return ret
+
 
 def _randone(d, limit=20, grouprefs=None):
     if grouprefs == None:
@@ -361,6 +368,7 @@ def parse(s):
         r = sre_parse.parse(s.decode('utf-8'), flags=U)
     return list(r)
 
+
 def generate(s, limit=20):
     """Creates a generator that generates all matching strings to a given regular expression
 
@@ -371,6 +379,7 @@ def generate(s, limit=20):
     :returns: string generator object
     """
     return _gen(parse(s), limit)
+
 
 def count(s, limit=20):
     """Counts all matching strings to a given regular expression
@@ -384,10 +393,12 @@ def count(s, limit=20):
     """
     return _gen(parse(s), limit, count=True)
 
+
 def getone(regex_string, limit=20):
     """Returns a random matching string to a given regular expression
     """
     return _randone(parse(regex_string), limit)
+
 
 def argparser():
     import argparse
@@ -438,6 +449,7 @@ def argparser():
                      )
     return vars(argp.parse_args())
 
+
 def __main__():
     from sys import exit, stderr
     args = argparser()
@@ -464,6 +476,7 @@ def __main__():
         args['output'].write(s)
     if args['delimiter'] == '\n':
         args['output'].write('\n')
+
 
 if __name__ == '__main__':
     __main__()
