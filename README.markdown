@@ -90,6 +90,7 @@ optional arguments:
   -c, --count           Count matching strings
   -m N, --max-number N  Max number of strings - default is -1
   -r, --random          Returns a random string that matches to the regex
+  -s, --simplify        Simplifies a regular expression
   -d DELIMITER, --delimiter DELIMITER
                         Delimiter - default is \n
   -v, --verbose         Verbose mode

@@ -434,6 +434,11 @@ def argparser():
                      ,default   = False
                      ,action    = 'store_true'
                      )
+    argp.add_argument('-s', '--simplify'
+                     ,help      = 'Simplifies a regular expression'
+                     ,default   = False
+                     ,action    = 'store_true'
+                     )
     argp.add_argument('-d', '--delimiter'
                      ,help      = 'Delimiter - default is \\n'
                      ,default   = '\n'
@@ -460,6 +465,9 @@ def __main__():
         exit(0)
     if args['random']:
         args['output'].write('%s%s' % (getone(args['regex'], limit=args['limit']), args['delimiter']))
+        exit(0)
+    if args['simplify']:
+        args['output'].write('%s%s' % (simplify(args['regex']), args['delimiter']))
         exit(0)
     try:
         g = generate(args['regex'], args['limit'])
