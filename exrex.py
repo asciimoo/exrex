@@ -257,6 +257,80 @@ def _randone(d, limit=20, grouprefs=None):
     return ret
 
 
+def to_string(sre_obj, paren=True):
+    """sre_parse object to string
+
+    :param sre_obj: Output of sre_parse.parse()
+    :type sre_obj: list
+    :rtype: str
+    """
+    ret = u''
+    for i in sre_obj:
+        if i[0] == 'in':
+            prefix = ''
+            if len(i[1]) and i[1][0][0] == 'negate':
+                prefix = '^'
+            ret += u'[{0}{1}]'.format(prefix, to_string(i[1], paren=paren))
+        elif i[0] == 'literal':
+            ret += unichr(i[1])
+        elif i[0] == 'category':
+            ret += REVERSE_CATEGORIES[i[1]]
+        elif i[0] == 'any':
+            ret += '.'
+        elif i[0] in 'branch':
+            # TODO simplifications here
+            parts = [to_string(x, paren=paren) for x in  i[1][1]]
+            if not any(parts):
+                continue
+            if i[1][0]:
+                if len(parts) == 1:
+                    paren = False
+                prefix = ''
+            else:
+                prefix = '?:'
+            branch = '|'.join(parts)
+            if paren:
+                ret += '({0}{1})'.format(prefix, branch)
+            else:
+                ret += '{0}'.format(branch)
+        elif i[0] == 'subpattern':
+            if i[1][0]:
+                ret += '({0})'.format(to_string(i[1][1], paren=False))
+            else:
+                ret += '{0}'.format(to_string(i[1][1], paren=paren))
+        elif i[0] == 'not_literal':
+            ret += '[^{0}]'.format(unichr(i[1]))
+        elif i[0] == 'max_repeat':
+            if i[1][0] == i[1][1]:
+                range_str = '{{{0}}}'.format(i[1][0])
+            else:
+                if i[1][0] == 0 and i[1][1] - i[1][0] == sre_parse.MAXREPEAT:
+                    range_str = '*'
+                elif i[1][0] == 1 and i[1][1] - i[1][0] == sre_parse.MAXREPEAT-1:
+                    range_str = '+'
+                else:
+                    range_str = '{{{0},{1}}}'.format(i[1][0], i[1][1])
+            ret += to_string(i[1][2], paren=paren)+range_str
+        elif i[0] == 'groupref':
+            ret += '\\{0}'.format(i[1])
+        elif i[0] == 'at':
+            if i[1] == 'at_beginning':
+                ret += '^'
+            elif i[1] == 'at_end':
+                ret += '$'
+        elif i[0] == 'negate':
+            pass
+            """
+        elif i[0] == 'assert':
+            pass
+        elif i[0] == 'assert_not':
+            pass
+        """
+        else:
+            print('[!] cannot handle expression "%s"' % str(i))
+    return ret
+
+
 def parse(s):
     """Regular expression parser
 
