@@ -1,8 +1,10 @@
 EXREX
 =====
 
-Exrex is a command line tool and python module that generates all - or random - matching strings to a given regular expression.
-It is pure python, without external dependencies.
+Irregular methods for regular expressions.
+
+Exrex is a command line tool and python module that generates all - or random - matching strings to a given regular expression and more.
+It's pure python, without external dependencies.
 
 There are regular expressions with infinite matching strings (eg.: `[a-z]+`), in these cases exrex limits the maximum length of the infinite parts.
 
@@ -15,8 +17,24 @@ Exrex uses generators, so the memory usage does not depend on the number of matc
  * Generating all matching string
  * Generating a random matching string
  * Counting the number of matching strings
- * [Groupref](http://www.regular-expressions.info/brackets.html) handling
- * Full unicode support
+ * Simplification of regular expressions
+
+
+### Installation
+
+
+To install exrex, simply:
+
+```bash
+$ pip install exrex
+```
+
+or
+
+```bash
+$ easy_install exrex
+```
+
 
 Usage
 =====
@@ -48,6 +66,9 @@ This is a test.
 This is an apple.
 This is an elf.
 This is an output.
+
+>>> print exrex.simplify('(ab|ac|ad)')
+(a[bcd])
 ```
 
 ### Command line usage
@@ -91,22 +112,6 @@ $ exrex '[01]{10}' -c
 1024
 
 ```
-
-### Installation
-
-
-To install exrex, simply:
-
-```bash
-$ pip install exrex
-```
-
-or
-
-```bash
-$ easy_install exrex
-```
-
 
 ### Bugs
 
