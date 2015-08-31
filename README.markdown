@@ -14,7 +14,7 @@ Exrex uses generators, so the memory usage does not depend on the number of matc
 
 *Features*
 
- * Generating all matching string
+ * Generating all matching strings
  * Generating a random matching string
  * Counting the number of matching strings
  * Simplification of regular expressions
