@@ -50,6 +50,9 @@ CATEGORIES = {sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE)
 def _build_reverse_categories():
     reverse = {}
     for key, value in sre_parse.CATEGORIES.items():
+        if not hasattr(value[1], '__iter__'):
+            continue
+
         for vv in value[1]:
             if value[0] == sre_parse.IN and vv[0] == sre_parse.CATEGORY:
                 reverse.update({vv[1]: key})
