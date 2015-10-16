@@ -22,7 +22,7 @@ setup(
         "Development Status :: 4 - Beta",
         "Topic :: Utilities",
         'Environment :: Console',
-        'License :: OSI Approved :: GNU Affero General Public License v3'
+        'License :: OSI Approved :: GNU Affero General Public License v3',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
