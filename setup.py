@@ -18,9 +18,18 @@ setup(
         "console_scripts": ["exrex=exrex:__main__"]
     },
     classifiers = [
+        # As from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Development Status :: 4 - Beta",
         "Topic :: Utilities",
         'Environment :: Console',
         'License :: OSI Approved :: GNU Affero General Public License v3'
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
 )

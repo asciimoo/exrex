@@ -41,15 +41,26 @@ __all__ = ('generate',
            'sre_to_string',
            'simplify')
 
-CATEGORIES = {'category_space'  : sorted(sre_parse.WHITESPACE)
-             ,'category_digit'  : sorted(sre_parse.DIGITS)
-             ,'category_any'    : [unichr(x) for x in range(32, 123)]
+CATEGORIES = {sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE)
+             ,sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS)
+             ,'category_any'          : [unichr(x) for x in range(32, 123)]
              }
 
-REVERSE_CATEGORIES = {vv[1]:k for k,v
-                      in sre_parse.CATEGORIES.items() for vv
-                      in v[1]
-                      if v[0] == 'in' and vv[0] == 'category'}
+
+def _build_reverse_categories():
+    reverse = {}
+    for key, value in sre_parse.CATEGORIES.items():
+        if not hasattr(value[1], '__iter__'):
+            continue
+
+        for vv in value[1]:
+            if value[0] == sre_parse.IN and vv[0] == sre_parse.CATEGORY:
+                reverse.update({vv[1]: key})
+
+    return reverse
+
+
+REVERSE_CATEGORIES = _build_reverse_categories()
 
 
 def comb(g, i):
@@ -73,7 +84,7 @@ def _in(d):
     ret = []
     neg = False
     for i in d:
-        if i[0] == 'range':
+        if i[0] == sre_parse.RANGE:
             subs = map(unichr, range(i[1][0], i[1][1]+1))
             if neg:
                 for char in subs:
@@ -83,7 +94,7 @@ def _in(d):
                         pass
             else:
                 ret.extend(subs)
-        elif i[0] == 'literal':
+        elif i[0] == sre_parse.LITERAL:
             if neg:
                 try:
                     ret.remove(unichr(i[1]))
@@ -91,7 +102,7 @@ def _in(d):
                     pass
             else:
                 ret.append(unichr(i[1]))
-        elif i[0] == 'category':
+        elif i[0] == sre_parse.CATEGORY:
             subs = CATEGORIES.get(i[1], [''])
             if neg:
                 for char in subs:
@@ -101,7 +112,7 @@ def _in(d):
                         pass
             else:
                 ret.extend(subs)
-        elif i[0] == 'negate':
+        elif i[0] == sre_parse.NEGATE:
             ret = list(CATEGORIES['category_any'])
             neg = True
     return ret
@@ -150,25 +161,25 @@ def _gen(d, limit=20, count=False, grouprefs=None):
     strings = 0
     literal = False
     for i in d:
-        if i[0] == 'in':
+        if i[0] == sre_parse.IN:
             subs = _in(i[1])
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
-        elif i[0] == 'literal':
+        elif i[0] == sre_parse.LITERAL:
             literal = True
             ret = mappend(ret, unichr(i[1]))
-        elif i[0] == 'category':
+        elif i[0] == sre_parse.CATEGORY:
             subs = CATEGORIES.get(i[1], [''])
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
-        elif i[0] == 'any':
+        elif i[0] == sre_parse.ANY:
             subs = CATEGORIES['category_any']
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
-        elif i[0] == 'max_repeat':
+        elif i[0] == sre_parse.MAX_REPEAT:
             items = list(i[1][2])
             if i[1][1]+1 - i[1][0] >= limit:
                 ran = range(i[1][0], i[1][0]+limit)
@@ -182,31 +193,31 @@ def _gen(d, limit=20, count=False, grouprefs=None):
                 for p in ran:
                     strings += pow(_gen(items, limit, True,grouprefs), p) or 1
             ret = prods(ret, ran, items, limit, grouprefs)
-        elif i[0] == 'branch':
+        elif i[0] == sre_parse.BRANCH:
             if count:
                 for x in i[1][1]:
                     strings += _gen(x, limit, True,grouprefs)
             ret = concit(ret, i[1][1], limit, grouprefs)
-        elif i[0] == 'subpattern':
+        elif i[0] == sre_parse.SUBPATTERN:
             if count:
                 strings = (strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True, grouprefs=grouprefs)) or 1)
             ret = ggen(ret, _gen, i[1][1], limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
         # ignore ^ and $
-        elif i[0] == 'at':
+        elif i[0] == sre_parse.AT:
             continue
-        elif i[0] == 'not_literal':
+        elif i[0] == sre_parse.NOT_LITERAL:
             subs = list(CATEGORIES['category_any'])
             subs.remove(unichr(i[1]))
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
-        elif i[0] == 'groupref':
+        elif i[0] == sre_parse.GROUPREF:
             ret = dappend(ret, grouprefs, i[1])
-        elif i[0] == 'assert':
+        elif i[0] == sre_parse.ASSERT:
             #print(i[1][1])
             #continue
             pass
-        elif i[0] == 'assert_not':
+        elif i[0] == sre_parse.ASSERT_NOT:
             pass
         else:
             print('[!] cannot handle expression ' + repr(i))
@@ -215,7 +226,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
         if strings == 0 and literal:
             inc = True
             for i in d:
-                if i[0] not in  ('at' 'literal'):
+                if i[0] not in  (sre_parse.AT, sre_parse.LITERAL):
                     inc = False
             if inc:
                 strings = 1
@@ -230,39 +241,39 @@ def _randone(d, limit=20, grouprefs=None):
     """docstring for _randone"""
     ret = ''
     for i in d:
-        if i[0] == 'in':
+        if i[0] == sre_parse.IN:
             ret += choice(_in(i[1]))
-        elif i[0] == 'literal':
+        elif i[0] == sre_parse.LITERAL:
             ret += unichr(i[1])
-        elif i[0] == 'category':
+        elif i[0] == sre_parse.CATEGORY:
             ret += choice(CATEGORIES.get(i[1], ['']))
-        elif i[0] == 'any':
+        elif i[0] == sre_parse.ANY:
             ret += choice(CATEGORIES['category_any'])
-        elif i[0] == 'max_repeat':
+        elif i[0] == sre_parse.MAX_REPEAT:
             if i[1][1]+1 - i[1][0] >= limit:
                 min,max = i[1][0], i[1][0]+limit
             else:
                 min,max = i[1][0], i[1][1]
             for _ in range(randint(min, max)):
                 ret += _randone(list(i[1][2]), limit, grouprefs)
-        elif i[0] == 'branch':
+        elif i[0] == sre_parse.BRANCH:
             ret += _randone(choice(i[1][1]), limit, grouprefs)
-        elif i[0] == 'subpattern':
+        elif i[0] == sre_parse.SUBPATTERN:
             subp = _randone(i[1][1], limit, grouprefs)
             if i[1][0]:
                 grouprefs[i[1][0]] = subp
             ret += subp
-        elif i[0] == 'at':
+        elif i[0] == sre_parse.AT:
             continue
-        elif i[0] == 'not_literal':
+        elif i[0] == sre_parse.NOT_LITERAL:
             c=list(CATEGORIES['category_any'])
             c.remove(unichr(i[1]))
             ret += choice(c)
-        elif i[0] == 'groupref':
+        elif i[0] == sre_parse.GROUPREF:
             ret += grouprefs[i[1]]
-        elif i[0] == 'assert':
+        elif i[0] == sre_parse.ASSERT:
             pass
-        elif i[0] == 'assert_not':
+        elif i[0] == sre_parse.ASSERT_NOT:
             pass
         else:
             print('[!] cannot handle expression "%s"' % str(i))
@@ -279,18 +290,18 @@ def sre_to_string(sre_obj, paren=True):
     """
     ret = u''
     for i in sre_obj:
-        if i[0] == 'in':
+        if i[0] == sre_parse.IN:
             prefix = ''
-            if len(i[1]) and i[1][0][0] == 'negate':
+            if len(i[1]) and i[1][0][0] == sre_parse.NEGATE:
                 prefix = '^'
             ret += u'[{0}{1}]'.format(prefix, sre_to_string(i[1], paren=paren))
-        elif i[0] == 'literal':
+        elif i[0] == sre_parse.LITERAL:
             ret += unichr(i[1])
-        elif i[0] == 'category':
+        elif i[0] == sre_parse.CATEGORY:
             ret += REVERSE_CATEGORIES[i[1]]
-        elif i[0] == 'any':
+        elif i[0] == sre_parse.ANY:
             ret += '.'
-        elif i[0] in 'branch':
+        elif i[0] == sre_parse.BRANCH:
             # TODO simplifications here
             parts = [sre_to_string(x, paren=paren) for x in  i[1][1]]
             if not any(parts):
@@ -306,14 +317,14 @@ def sre_to_string(sre_obj, paren=True):
                 ret += '({0}{1})'.format(prefix, branch)
             else:
                 ret += '{0}'.format(branch)
-        elif i[0] == 'subpattern':
+        elif i[0] == sre_parse.SUBPATTERN:
             if i[1][0]:
                 ret += '({0})'.format(sre_to_string(i[1][1], paren=False))
             else:
                 ret += '{0}'.format(sre_to_string(i[1][1], paren=paren))
-        elif i[0] == 'not_literal':
+        elif i[0] == sre_parse.NOT_LITERAL:
             ret += '[^{0}]'.format(unichr(i[1]))
-        elif i[0] == 'max_repeat':
+        elif i[0] == sre_parse.MAX_REPEAT:
             if i[1][0] == i[1][1]:
                 range_str = '{{{0}}}'.format(i[1][0])
             else:
@@ -324,19 +335,19 @@ def sre_to_string(sre_obj, paren=True):
                 else:
                     range_str = '{{{0},{1}}}'.format(i[1][0], i[1][1])
             ret += sre_to_string(i[1][2], paren=paren)+range_str
-        elif i[0] == 'groupref':
+        elif i[0] == sre_parse.GROUPREF:
             ret += '\\{0}'.format(i[1])
-        elif i[0] == 'at':
-            if i[1] == 'at_beginning':
+        elif i[0] == sre_parse.AT:
+            if i[1] == sre_parse.AT_BEGINNING:
                 ret += '^'
-            elif i[1] == 'at_end':
+            elif i[1] == sre_parse.AT_END:
                 ret += '$'
-        elif i[0] == 'negate':
+        elif i[0] == sre_parse.NEGATE:
             pass
             """
-        elif i[0] == 'assert':
+        elif i[0] == sre_parse.ASSERT:
             pass
-        elif i[0] == 'assert_not':
+        elif i[0] == sre_parse.ASSERT_NOT:
             pass
         """
         else:
