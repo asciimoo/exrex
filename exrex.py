@@ -352,6 +352,8 @@ def sre_to_string(sre_obj, paren=True):
                 ret += '$'
         elif i[0] == sre_parse.NEGATE:
             pass
+        elif i[0] == sre_parse.RANGE:
+            ret += '{0}-{1}'.format(unichr(i[1][0]), unichr(i[1][1]))
             """
         elif i[0] == sre_parse.ASSERT:
             pass
