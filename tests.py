@@ -23,45 +23,51 @@ import re
 from sys import exit, version_info
 IS_PY3 = version_info[0] == 3
 
-RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
-     ,'a|ab': ['a', 'ab']
-     ,'(foo|bar)(20|)16': ['foo2016', 'foo16', 'bar2016', 'bar16']
-     ,'[12]{1,2}': ['1', '2', '11', '12', '21', '22']
-     ,'((hai){2}|world)!': ['haihai!', 'world!']
-     ,'[ab]{1,3}': ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']
-     ,'\d': list(map(str, range(0, 10)))
-     ,'a[b]?(c){0,1}': ['a', 'ac', 'ab', 'abc']
-     ,'(a(b(c(d(e(f))))))': ['abcdef']
-     ,'(a(b(c(d(e(f){1,2}))))){1,2}': ['abcdef', 'abcdeff', 'abcdefabcdef', 'abcdefabcdeff', 'abcdeffabcdef', 'abcdeffabcdeff']
-     ,'[^a]': [x for x in CATEGORIES['category_any'] if x != 'a']
-     ,'[^asdf]': [x for x in CATEGORIES['category_any'] if x not in 'asdf']
-     ,'asdf': ['asdf']
-     ,'(as|df)': ['as', 'df']
-     ,'[áíő]': [u'á', u'í', u'ő']
-     ,'(a|b)(1|2)\\1\\2\\1\\2': ['a1a1a1', 'a2a2a2', 'b1b1b1', 'b2b2b2']
-     }
+RS = {
+    '[ab][cd]': ['ac', 'ad', 'bc', 'bd'],
+    'a|ab': ['a', 'ab'],
+    '(foo|bar)(20|)16': ['foo2016', 'foo16', 'bar2016', 'bar16'],
+    '[12]{1,2}': ['1', '2', '11', '12', '21', '22'],
+    '((hai){2}|world)!': ['haihai!', 'world!'],
+    '[ab]{1,3}': ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb'],
+    '\d': list(map(str, range(0, 10))),
+    'a[b]?(c){0,1}': ['a', 'ac', 'ab', 'abc'],
+    '(a(b(c(d(e(f))))))': ['abcdef'],
+    '(a(b(c(d(e(f){1,2}))))){1,2}': ['abcdef', 'abcdeff', 'abcdefabcdef',
+                                     'abcdefabcdeff', 'abcdeffabcdef', 'abcdeffabcdeff'],
+    '[^a]': [x for x in CATEGORIES['category_any'] if x != 'a'],
+    '[^asdf]': [x for x in CATEGORIES['category_any'] if x not in 'asdf'],
+    'asdf': ['asdf'],
+    '(as|df)': ['as', 'df'],
+    '[áíő]': [u'á', u'í', u'ő'],
+    '(a|b)(1|2)\\1\\2\\1\\2': ['a1a1a1', 'a2a2a2', 'b1b1b1', 'b2b2b2']
+}
 
-BIGS = ['^a*$'
-       ,'^[a-zA-Z]+$'
-       ,'^(foo){3,}$'
-       ,'^([^/]+)(.*)$'
-       ,'^[^/]+(.*)$'
-       ,'^([^/]+).*$'
-       ,'^[^asdf]+$'
-       ,'^([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+$'
-       ,'^([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+$'
-       ,'^(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M$'
-       ,'(.*)\\1'
-       ]
+BIGS = [
+    '^a*$',
+    '^[a-zA-Z]+$',
+    '^(foo){3,}$',
+    '^([^/]+)(.*)$',
+    '^[^/]+(.*)$',
+    '^([^/]+).*$',
+    '^[^asdf]+$',
+    '^([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+$',
+    '^([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+$',
+    '^(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M$',
+    '(.*)\\1'
+]
+
 
 def gen_test():
     for regex, result in RS.items():
         try:
             assert list(generate(regex)) == result
         except:
-            print('[E] Assertion error! "%s"\n\t%r != %r' % (regex, list(generate(regex)), result))
+            print('[E] Assertion error! "%s"\n\t%r != %r' %
+                  (regex, list(generate(regex)), result))
             return -1
     return 0
+
 
 def count_test():
     for regex, result in RS.items():
@@ -74,12 +80,14 @@ def count_test():
                 print('[E] Assertion error! "%s"\n\t%d != %d' % (regex, c, l))
                 return -1
             else:
-                print('[E] Assertion error! "%s"\n\t%d != %d' % (regex.decode('utf-8'), c, l))
+                print('[E] Assertion error! "%s"\n\t%d != %d' %
+                      (regex.decode('utf-8'), c, l))
                 return -1
     return 0
 
+
 def getone_test(tries=200):
-    for regex,_ in RS.items():
+    for regex, _ in RS.items():
         for _ in range(tries):
             try:
                 s = getone(regex)
@@ -89,10 +97,12 @@ def getone_test(tries=200):
                     assert re.match(regex, s.encode('utf-8'), re.U)
             except Exception:
                 if IS_PY3:
-                    print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
+                    print('[E] Assertion error! "%s"\n\t%s not match' %
+                          (regex, s))
                     return -1
                 else:
-                    print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
+                    print('[E] Assertion error! "%s"\n\t%s not match' %
+                          (regex.decode('utf-8'), s))
                     return -1
     for regex in BIGS:
         for _ in range(tries):
@@ -104,10 +114,12 @@ def getone_test(tries=200):
                     assert re.match(regex, s.encode('utf-8'), re.U)
             except:
                 if IS_PY3:
-                    print('[E] Assertion error! "%s"\n\t%s not match' % (regex, s))
+                    print('[E] Assertion error! "%s"\n\t%s not match' %
+                          (regex, s))
                     return -1
                 else:
-                    print('[E] Assertion error! "%s"\n\t%s not match' % (regex.decode('utf-8'), s))
+                    print('[E] Assertion error! "%s"\n\t%s not match' %
+                          (regex.decode('utf-8'), s))
                     return -1
     return 0
 
@@ -136,4 +148,4 @@ if __name__ == '__main__':
             print('[+] {0} test passed'.format(test_name))
         else:
             print('[-] {0} test failed'.format(test_name))
-            exit(i+1)
+            exit(i + 1)

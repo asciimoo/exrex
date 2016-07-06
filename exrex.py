@@ -24,7 +24,7 @@ except:
     pass
 from re import sre_parse, U
 from itertools import tee
-from random import choice,randint
+from random import choice, randint
 from types import GeneratorType
 
 from sys import version_info
@@ -33,18 +33,21 @@ IS_PY3 = version_info[0] == 3
 if IS_PY3:
     unichr = chr
 
-__all__ = ('generate',
-           'CATEGORIES',
-           'count',
-           'parse',
-           'getone',
-           'sre_to_string',
-           'simplify')
+__all__ = (
+    'generate',
+    'CATEGORIES',
+    'count',
+    'parse',
+    'getone',
+    'sre_to_string',
+    'simplify'
+)
 
-CATEGORIES = {sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE)
-             ,sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS)
-             ,'category_any'          : [unichr(x) for x in range(32, 123)]
-             }
+CATEGORIES = {
+    sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE),
+    sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS),
+    'category_any': [unichr(x) for x in range(32, 123)]
+}
 
 
 def _build_reverse_categories():
@@ -65,19 +68,19 @@ REVERSE_CATEGORIES = _build_reverse_categories()
 
 def comb(g, i):
     for c in g:
-        g2,i = tee(i)
+        g2, i = tee(i)
         for c2 in g2:
-            yield c+c2
+            yield c + c2
 
 
 def mappend(g, c):
     for cc in g:
-        yield cc+c
+        yield cc + c
 
 
 def dappend(g, d, k):
     for cc in g:
-        yield cc+d[k]
+        yield cc + d[k]
 
 
 def _in(d):
@@ -85,7 +88,7 @@ def _in(d):
     neg = False
     for i in d:
         if i[0] == sre_parse.RANGE:
-            subs = map(unichr, range(i[1][0], i[1][1]+1))
+            subs = map(unichr, range(i[1][0], i[1][1] + 1))
             if neg:
                 for char in subs:
                     try:
@@ -126,7 +129,8 @@ def prods(orig, ran, items, limit, grouprefs):
             else:
                 ret = [o]
                 for _ in range(r):
-                    ret = ggen(ret, _gen, items, limit=limit, count=False, grouprefs=grouprefs)
+                    ret = ggen(
+                        ret, _gen, items, limit=limit, count=False, grouprefs=grouprefs)
                 for i in ret:
                     yield i
 
@@ -141,7 +145,7 @@ def ggen(g1, f, *args, **kwargs):
         if isinstance(g2, GeneratorType):
             for b in g2:
                 grouprefs[groupref] = b
-                yield a+b
+                yield a + b
         else:
             yield g2
 
@@ -150,12 +154,12 @@ def concit(g1, seqs, limit, grouprefs):
     for a in g1:
         for s in seqs:
             for b in _gen(s, limit, grouprefs=grouprefs):
-                yield a+b
+                yield a + b
 
 
 def _gen(d, limit=20, count=False, grouprefs=None):
     """docstring for _gen"""
-    if grouprefs == None:
+    if grouprefs is None:
         grouprefs = {}
     ret = ['']
     strings = 0
@@ -181,27 +185,29 @@ def _gen(d, limit=20, count=False, grouprefs=None):
             ret = comb(ret, subs)
         elif i[0] == sre_parse.MAX_REPEAT:
             items = list(i[1][2])
-            if i[1][1]+1 - i[1][0] >= limit:
-                ran = range(i[1][0], i[1][0]+limit)
+            if i[1][1] + 1 - i[1][0] >= limit:
+                ran = range(i[1][0], i[1][0] + limit)
                 r1 = i[1][0]
-                r2 = i[1][0]+limit
+                r2 = i[1][0] + limit
             else:
                 r1 = i[1][0]
-                r2 = i[1][1]+1
+                r2 = i[1][1] + 1
             ran = range(r1, r2)
             if count:
                 for p in ran:
-                    strings += pow(_gen(items, limit, True,grouprefs), p) or 1
+                    strings += pow(_gen(items, limit, True, grouprefs), p) or 1
             ret = prods(ret, ran, items, limit, grouprefs)
         elif i[0] == sre_parse.BRANCH:
             if count:
                 for x in i[1][1]:
-                    strings += _gen(x, limit, True,grouprefs) or 1
+                    strings += _gen(x, limit, True, grouprefs) or 1
             ret = concit(ret, i[1][1], limit, grouprefs)
         elif i[0] == sre_parse.SUBPATTERN:
             if count:
-                strings = (strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True, grouprefs=grouprefs)) or 1)
-            ret = ggen(ret, _gen, i[1][1], limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
+                strings = (
+                    strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True, grouprefs=grouprefs)) or 1)
+            ret = ggen(ret, _gen, i[1][
+                       1], limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
         # ignore ^ and $
         elif i[0] == sre_parse.AT:
             continue
@@ -214,8 +220,8 @@ def _gen(d, limit=20, count=False, grouprefs=None):
         elif i[0] == sre_parse.GROUPREF:
             ret = dappend(ret, grouprefs, i[1])
         elif i[0] == sre_parse.ASSERT:
-            #print(i[1][1])
-            #continue
+            # print(i[1][1])
+            # continue
             pass
         elif i[0] == sre_parse.ASSERT_NOT:
             pass
@@ -226,7 +232,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
         if strings == 0 and literal:
             inc = True
             for i in d:
-                if i[0] not in  (sre_parse.AT, sre_parse.LITERAL):
+                if i[0] not in (sre_parse.AT, sre_parse.LITERAL):
                     inc = False
             if inc:
                 strings = 1
@@ -236,7 +242,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
 
 
 def _randone(d, limit=20, grouprefs=None):
-    if grouprefs == None:
+    if grouprefs is None:
         grouprefs = {}
     """docstring for _randone"""
     ret = ''
@@ -250,10 +256,10 @@ def _randone(d, limit=20, grouprefs=None):
         elif i[0] == sre_parse.ANY:
             ret += choice(CATEGORIES['category_any'])
         elif i[0] == sre_parse.MAX_REPEAT:
-            if i[1][1]+1 - i[1][0] >= limit:
-                min,max = i[1][0], i[1][0]+limit
+            if i[1][1] + 1 - i[1][0] >= limit:
+                min, max = i[1][0], i[1][0] + limit
             else:
-                min,max = i[1][0], i[1][1]
+                min, max = i[1][0], i[1][1]
             for _ in range(randint(min, max)):
                 ret += _randone(list(i[1][2]), limit, grouprefs)
         elif i[0] == sre_parse.BRANCH:
@@ -266,7 +272,7 @@ def _randone(d, limit=20, grouprefs=None):
         elif i[0] == sre_parse.AT:
             continue
         elif i[0] == sre_parse.NOT_LITERAL:
-            c=list(CATEGORIES['category_any'])
+            c = list(CATEGORIES['category_any'])
             c.remove(unichr(i[1]))
             ret += choice(c)
         elif i[0] == sre_parse.GROUPREF:
@@ -303,7 +309,7 @@ def sre_to_string(sre_obj, paren=True):
             ret += '.'
         elif i[0] == sre_parse.BRANCH:
             # TODO simplifications here
-            parts = [sre_to_string(x, paren=paren) for x in  i[1][1]]
+            parts = [sre_to_string(x, paren=paren) for x in i[1][1]]
             if not any(parts):
                 continue
             if i[1][0]:
@@ -330,11 +336,11 @@ def sre_to_string(sre_obj, paren=True):
             else:
                 if i[1][0] == 0 and i[1][1] - i[1][0] == sre_parse.MAXREPEAT:
                     range_str = '*'
-                elif i[1][0] == 1 and i[1][1] - i[1][0] == sre_parse.MAXREPEAT-1:
+                elif i[1][0] == 1 and i[1][1] - i[1][0] == sre_parse.MAXREPEAT - 1:
                     range_str = '+'
                 else:
                     range_str = '{{{0},{1}}}'.format(i[1][0], i[1][1])
-            ret += sre_to_string(i[1][2], paren=paren)+range_str
+            ret += sre_to_string(i[1][2], paren=paren) + range_str
         elif i[0] == sre_parse.GROUPREF:
             ret += '\\{0}'.format(i[1])
         elif i[0] == sre_parse.AT:
@@ -414,55 +420,65 @@ def getone(regex_string, limit=20):
 def argparser():
     import argparse
     from sys import stdout
-    argp = argparse.ArgumentParser(description='exrex - regular expression string generator')
-    argp.add_argument('-o', '--output'
-                     ,help      = 'Output file - default is STDOUT'
-                     ,metavar   = 'FILE'
-                     ,default   = stdout
-                     ,type      = argparse.FileType('w')
-                     )
-    argp.add_argument('-l', '--limit'
-                     ,help      = 'Max limit for range size - default is 20'
-                     ,default   = 20
-                     ,action    = 'store'
-                     ,type      = int
-                     ,metavar   = 'N'
-                     )
-    argp.add_argument('-c', '--count'
-                     ,help      = 'Count matching strings'
-                     ,default   = False
-                     ,action    = 'store_true'
-                     )
-    argp.add_argument('-m', '--max-number'
-                     ,help      = 'Max number of strings - default is -1'
-                     ,default   = -1
-                     ,action    = 'store'
-                     ,type      = int
-                     ,metavar   = 'N'
-                     )
-    argp.add_argument('-r', '--random'
-                     ,help      = 'Returns a random string that matches to the regex'
-                     ,default   = False
-                     ,action    = 'store_true'
-                     )
-    argp.add_argument('-s', '--simplify'
-                     ,help      = 'Simplifies a regular expression'
-                     ,default   = False
-                     ,action    = 'store_true'
-                     )
-    argp.add_argument('-d', '--delimiter'
-                     ,help      = 'Delimiter - default is \\n'
-                     ,default   = '\n'
-                     )
-    argp.add_argument('-v', '--verbose'
-                     ,action    = 'store_true'
-                     ,help      = 'Verbose mode'
-                     ,default   = False
-                     )
-    argp.add_argument('regex'
-                     ,metavar   = 'REGEX'
-                     ,help      = 'REGEX string'
-                     )
+    argp = argparse.ArgumentParser(
+        description='exrex - regular expression string generator')
+    argp.add_argument(
+        '-o', '--output',
+        help='Output file - default is STDOUT',
+        metavar='FILE',
+        default=stdout,
+        type=argparse.FileType('w')
+    )
+    argp.add_argument(
+        '-l', '--limit',
+        help='Max limit for range size - default is 20',
+        default=20,
+        action='store',
+        type=int,
+        metavar='N'
+    )
+    argp.add_argument(
+        '-c', '--count',
+        help='Count matching strings',
+        default=False,
+        action='store_true'
+    )
+    argp.add_argument(
+        '-m', '--max-number',
+        help='Max number of strings - default is -1',
+        default=-1,
+        action='store',
+        type=int,
+        metavar='N'
+    )
+    argp.add_argument(
+        '-r', '--random',
+        help='Returns a random string that matches to the regex',
+        default=False,
+        action='store_true'
+    )
+    argp.add_argument(
+        '-s', '--simplify',
+        help='Simplifies a regular expression',
+        default=False,
+        action='store_true'
+    )
+    argp.add_argument(
+        '-d', '--delimiter',
+        help='Delimiter - default is \\n',
+        default='\n'
+    )
+    argp.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Verbose mode',
+        default=False
+    )
+    argp.add_argument(
+        'regex',
+        metavar='REGEX',
+        help='REGEX string'
+    )
     return vars(argp.parse_args())
 
 
@@ -470,15 +486,19 @@ def __main__():
     from sys import exit, stderr
     args = argparser()
     if args['verbose']:
-        args['output'].write('%r%s' % (parse(args['regex']), args['delimiter']))
+        args['output'].write(
+            '%r%s' % (parse(args['regex']), args['delimiter']))
     if args['count']:
-        args['output'].write('%d%s' % (count(args['regex'], limit=args['limit']), args['delimiter']))
+        args['output'].write(
+            '%d%s' % (count(args['regex'], limit=args['limit']), args['delimiter']))
         exit(0)
     if args['random']:
-        args['output'].write('%s%s' % (getone(args['regex'], limit=args['limit']), args['delimiter']))
+        args['output'].write(
+            '%s%s' % (getone(args['regex'], limit=args['limit']), args['delimiter']))
         exit(0)
     if args['simplify']:
-        args['output'].write('%s%s' % (simplify(args['regex']), args['delimiter']))
+        args['output'].write(
+            '%s%s' % (simplify(args['regex']), args['delimiter']))
         exit(0)
     try:
         g = generate(args['regex'], args['limit'])

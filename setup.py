@@ -1,23 +1,23 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = 'exrex',
-    version = '0.9.4',
-    author = 'Adam Tauber',
-    author_email = 'asciimoo@gmail.com',
-    description = 'Irregular methods for regular expressions',
-    license = 'AGPLv3+',
-    keywords = "regexp generators string generation regex simplification",
-    url = 'https://github.com/asciimoo/exrex',
-    scripts = ['exrex.py'],
-    py_modules = ['exrex'],
-    packages = find_packages(),
-    install_requires = [],
-    download_url = 'https://github.com/asciimoo/exrex/tarball/master',
+    name='exrex',
+    version='0.9.4',
+    author='Adam Tauber',
+    author_email='asciimoo@gmail.com',
+    description='Irregular methods for regular expressions',
+    license='AGPLv3+',
+    keywords="regexp generators string generation regex simplification",
+    url='https://github.com/asciimoo/exrex',
+    scripts=['exrex.py'],
+    py_modules=['exrex'],
+    packages=find_packages(),
+    install_requires=[],
+    download_url='https://github.com/asciimoo/exrex/tarball/master',
     entry_points={
         "console_scripts": ["exrex=exrex:__main__"]
     },
-    classifiers = [
+    classifiers=[
         # As from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Development Status :: 4 - Beta",
         "Topic :: Utilities",
@@ -31,5 +31,5 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-    ],
+    ]
 )
