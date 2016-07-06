@@ -213,7 +213,8 @@ def _gen(d, limit=20, count=False, grouprefs=None):
             continue
         elif i[0] == sre_parse.NOT_LITERAL:
             subs = list(CATEGORIES['category_any'])
-            subs.remove(unichr(i[1]))
+            if unichr(i[1]) in subs:
+                subs.remove(unichr(i[1]))
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
@@ -273,7 +274,8 @@ def _randone(d, limit=20, grouprefs=None):
             continue
         elif i[0] == sre_parse.NOT_LITERAL:
             c = list(CATEGORIES['category_any'])
-            c.remove(unichr(i[1]))
+            if unichr(i[1]) in c:
+                c.remove(unichr(i[1]))
             ret += choice(c)
         elif i[0] == sre_parse.GROUPREF:
             ret += grouprefs[i[1]]
