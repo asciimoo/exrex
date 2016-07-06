@@ -24,6 +24,8 @@ from sys import exit, version_info
 IS_PY3 = version_info[0] == 3
 
 RS = {'[ab][cd]': ['ac', 'ad', 'bc', 'bd']
+     ,'a|ab': ['a', 'ab']
+     ,'(foo|bar)(20|)16': ['foo2016', 'foo16', 'bar2016', 'bar16']
      ,'[12]{1,2}': ['1', '2', '11', '12', '21', '22']
      ,'((hai){2}|world)!': ['haihai!', 'world!']
      ,'[ab]{1,3}': ['a', 'b', 'aa', 'ab', 'ba', 'bb', 'aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']

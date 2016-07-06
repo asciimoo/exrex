@@ -196,7 +196,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
         elif i[0] == sre_parse.BRANCH:
             if count:
                 for x in i[1][1]:
-                    strings += _gen(x, limit, True,grouprefs)
+                    strings += _gen(x, limit, True,grouprefs) or 1
             ret = concit(ret, i[1][1], limit, grouprefs)
         elif i[0] == sre_parse.SUBPATTERN:
             if count:
