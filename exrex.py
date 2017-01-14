@@ -258,7 +258,7 @@ def _randone(d, limit=20, grouprefs=None):
             ret += choice(CATEGORIES['category_any'])
         elif i[0] == sre_parse.MAX_REPEAT:
             if i[1][1] + 1 - i[1][0] >= limit:
-                min, max = i[1][0], i[1][0] + limit
+                min, max = i[1][0], i[1][0] + limit - 1
             else:
                 min, max = i[1][0], i[1][1]
             for _ in range(randint(min, max)):
