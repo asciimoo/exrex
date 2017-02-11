@@ -183,7 +183,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
             if count:
                 strings = (strings or 1) * len(subs)
             ret = comb(ret, subs)
-        elif i[0] == sre_parse.MAX_REPEAT:
+        elif i[0] == sre_parse.MAX_REPEAT or i[0] == sre_parse.MIN_REPEAT:
             items = list(i[1][2])
             if i[1][1] + 1 - i[1][0] >= limit:
                 ran = range(i[1][0], i[1][0] + limit)
@@ -256,7 +256,7 @@ def _randone(d, limit=20, grouprefs=None):
             ret += choice(CATEGORIES.get(i[1], ['']))
         elif i[0] == sre_parse.ANY:
             ret += choice(CATEGORIES['category_any'])
-        elif i[0] == sre_parse.MAX_REPEAT:
+        elif i[0] == sre_parse.MAX_REPEAT or i[0] == sre_parse.MIN_REPEAT:
             if i[1][1] + 1 - i[1][0] >= limit:
                 min, max = i[1][0], i[1][0] + limit - 1
             else:
@@ -342,6 +342,16 @@ def sre_to_string(sre_obj, paren=True):
                     range_str = '+'
                 else:
                     range_str = '{{{0},{1}}}'.format(i[1][0], i[1][1])
+            ret += sre_to_string(i[1][2], paren=paren) + range_str
+        elif i[0] == sre_parse.MIN_REPEAT:
+            if i[1][0] == 0 and i[1][1] == sre_parse.MAXREPEAT:
+                range_str = '*?'
+            elif i[1][0] == 1 and i[1][1] == sre_parse.MAXREPEAT:
+                range_str = '+?'
+            elif i[1][1] == sre_parse.MAXREPEAT:
+                range_str = '{{{0},}}?'.format(i[1][0])
+            else:
+                range_str = '{{{0},{1}}}?'.format(i[1][0], i[1][1])
             ret += sre_to_string(i[1][2], paren=paren) + range_str
         elif i[0] == sre_parse.GROUPREF:
             ret += '\\{0}'.format(i[1])
