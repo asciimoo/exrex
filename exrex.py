@@ -202,7 +202,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
                 for x in i[1][1]:
                     strings += _gen(x, limit, True, grouprefs) or 1
             ret = concit(ret, i[1][1], limit, grouprefs)
-        elif i[0] == sre_parse.SUBPATTERN:
+        elif i[0] == sre_parse.SUBPATTERN or i[0] == sre_parse.ASSERT:
             if count:
                 strings = (
                     strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True, grouprefs=grouprefs)) or 1)
@@ -220,10 +220,6 @@ def _gen(d, limit=20, count=False, grouprefs=None):
             ret = comb(ret, subs)
         elif i[0] == sre_parse.GROUPREF:
             ret = dappend(ret, grouprefs, i[1])
-        elif i[0] == sre_parse.ASSERT:
-            # print(i[1][1])
-            # continue
-            pass
         elif i[0] == sre_parse.ASSERT_NOT:
             pass
         else:
@@ -265,7 +261,7 @@ def _randone(d, limit=20, grouprefs=None):
                 ret += _randone(list(i[1][2]), limit, grouprefs)
         elif i[0] == sre_parse.BRANCH:
             ret += _randone(choice(i[1][1]), limit, grouprefs)
-        elif i[0] == sre_parse.SUBPATTERN:
+        elif i[0] == sre_parse.SUBPATTERN or i[0] == sre_parse.ASSERT:
             subp = _randone(i[1][1], limit, grouprefs)
             if i[1][0]:
                 grouprefs[i[1][0]] = subp
@@ -279,8 +275,6 @@ def _randone(d, limit=20, grouprefs=None):
             ret += choice(c)
         elif i[0] == sre_parse.GROUPREF:
             ret += grouprefs[i[1]]
-        elif i[0] == sre_parse.ASSERT:
-            pass
         elif i[0] == sre_parse.ASSERT_NOT:
             pass
         else:
@@ -354,12 +348,13 @@ def sre_to_string(sre_obj, paren=True):
             pass
         elif i[0] == sre_parse.RANGE:
             ret += '{0}-{1}'.format(unichr(i[1][0]), unichr(i[1][1]))
-            """
         elif i[0] == sre_parse.ASSERT:
-            pass
+            if i[1][0]:
+                ret += '(?={0})'.format(sre_to_string(i[1][1], paren=False))
+            else:
+                ret += '{0}'.format(sre_to_string(i[1][1], paren=paren))
         elif i[0] == sre_parse.ASSERT_NOT:
             pass
-        """
         else:
             print('[!] cannot handle expression "%s"' % str(i))
     return ret
