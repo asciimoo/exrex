@@ -29,6 +29,7 @@ from types import GeneratorType
 
 from sys import version_info
 IS_PY3 = version_info[0] == 3
+IS_PY36_OR_GREATER = IS_PY3 and version_info[1] > 5
 
 if IS_PY3:
     unichr = chr
@@ -203,11 +204,13 @@ def _gen(d, limit=20, count=False, grouprefs=None):
                     strings += _gen(x, limit, True, grouprefs) or 1
             ret = concit(ret, i[1][1], limit, grouprefs)
         elif i[0] == sre_parse.SUBPATTERN or i[0] == sre_parse.ASSERT:
+            subexpr = i[1][1]
+            if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
+                subexpr = i[1][3]
             if count:
                 strings = (
-                    strings or 1) * (sum(ggen([0], _gen, i[1][1], limit=limit, count=True, grouprefs=grouprefs)) or 1)
-            ret = ggen(ret, _gen, i[1][
-                       1], limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
+                    strings or 1) * (sum(ggen([0], _gen, subexpr, limit=limit, count=True, grouprefs=grouprefs)) or 1)
+            ret = ggen(ret, _gen, subexpr, limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
         # ignore ^ and $
         elif i[0] == sre_parse.AT:
             continue
@@ -262,7 +265,10 @@ def _randone(d, limit=20, grouprefs=None):
         elif i[0] == sre_parse.BRANCH:
             ret += _randone(choice(i[1][1]), limit, grouprefs)
         elif i[0] == sre_parse.SUBPATTERN or i[0] == sre_parse.ASSERT:
-            subp = _randone(i[1][1], limit, grouprefs)
+            subexpr = i[1][1]
+            if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
+                subexpr = i[1][3]
+            subp = _randone(subexpr, limit, grouprefs)
             if i[1][0]:
                 grouprefs[i[1][0]] = subp
             ret += subp
@@ -320,10 +326,13 @@ def sre_to_string(sre_obj, paren=True):
             else:
                 ret += '{0}'.format(branch)
         elif i[0] == sre_parse.SUBPATTERN:
+            subexpr = i[1][1]
+            if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
+                subexpr = i[1][3]
             if i[1][0]:
-                ret += '({0})'.format(sre_to_string(i[1][1], paren=False))
+                ret += '({0})'.format(sre_to_string(subexpr, paren=False))
             else:
-                ret += '{0}'.format(sre_to_string(i[1][1], paren=paren))
+                ret += '{0}'.format(sre_to_string(subexpr, paren=paren))
         elif i[0] == sre_parse.NOT_LITERAL:
             ret += '[^{0}]'.format(unichr(i[1]))
         elif i[0] == sre_parse.MAX_REPEAT:

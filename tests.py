@@ -24,6 +24,7 @@ from sys import exit, version_info
 IS_PY3 = version_info[0] == 3
 
 RS = {
+    '(a|b)': ['a', 'b'],
     '[ab][cd]': ['ac', 'ad', 'bc', 'bd'],
     'a|ab': ['a', 'ab'],
     '[0-2]': ['0', '1', '2'],
