@@ -55,6 +55,8 @@ BIGS = [
     '^[^/]+(.*)$',
     '^([^/]+).*$',
     '^[^asdf]+$',
+    '^a{5,}?',
+    '^a[^bcd]*?e',
     '^([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+$',
     '^([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+$',
     '^(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M$',
