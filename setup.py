@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='exrex',
-    version='0.10.4',
+    version='0.10.5',
     author='Adam Tauber',
     author_email='asciimoo@gmail.com',
     description='Irregular methods for regular expressions',
