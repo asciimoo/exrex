@@ -187,7 +187,6 @@ def _gen(d, limit=20, count=False, grouprefs=None):
         elif i[0] == sre_parse.MAX_REPEAT:
             items = list(i[1][2])
             if i[1][1] + 1 - i[1][0] >= limit:
-                ran = range(i[1][0], i[1][0] + limit)
                 r1 = i[1][0]
                 r2 = i[1][0] + limit
             else:
@@ -195,8 +194,11 @@ def _gen(d, limit=20, count=False, grouprefs=None):
                 r2 = i[1][1] + 1
             ran = range(r1, r2)
             if count:
+                branch_count = 0
                 for p in ran:
-                    strings += pow(_gen(items, limit, True, grouprefs), p) or 1
+                    branch_count += pow(_gen(items, limit, True, grouprefs), p)
+                strings = (strings or 1) * branch_count
+
             ret = prods(ret, ran, items, limit, grouprefs)
         elif i[0] == sre_parse.BRANCH:
             if count:
