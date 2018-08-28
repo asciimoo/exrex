@@ -165,13 +165,19 @@ along with exrex. If not, see < http://www.gnu.org/licenses/ >.
 
 ### Similar projects
 
- * [randexp.js](http://fent.github.com/randexp.js/)
- * [regldg](http://regldg.com/)
- * [regex-genex](https://github.com/audreyt/regex-genex)
- * [rstr.xeger](https://bitbucket.org/leapfrogdevelopment/rstr/src#rst-header-xeger)
+Tools that generate a list of all possible strings that match a given pattern:
+* [regldg](http://regldg.com/)
+  (features a live demo on the website)
+* [regex-genex](https://github.com/audreyt/regex-genex)
+  (supports using multiple regex patterns simultaneously)
+
+Tools that generate random strings, one by one, that match a given pattern:
+* [randexp.js](http://fent.github.com/randexp.js/)
+  (features several live demos on the website)
+* [rstr.xeger](https://bitbucket.org/leapfrogdevelopment/rstr/src#rst-header-xeger)
+  (a method of the `rstr` Python module)
 
 ### Profiling
 
  * `python -m cProfile exrex.py '[a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z]' -o /dev/null`
  * `python -m cProfile exrex.py '[0-9]{6}' -o /dev/null`
-
