@@ -306,7 +306,8 @@ def sre_to_string(sre_obj, paren=True):
                 prefix = '^'
             ret += u'[{0}{1}]'.format(prefix, sre_to_string(i[1], paren=paren))
         elif i[0] == sre_parse.LITERAL:
-            ret += unichr(i[1])
+            u = unichr(i[1])
+            ret += u if u not in sre_parse.SPECIAL_CHARS else '\\{0}'.format(u)
         elif i[0] == sre_parse.CATEGORY:
             ret += REVERSE_CATEGORIES[i[1]]
         elif i[0] == sre_parse.ANY:
