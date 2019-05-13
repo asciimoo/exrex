@@ -92,6 +92,8 @@ setup(
     author_email=EMAIL,
     url=URL,
     keywords="regexp generators string generation regex simplification",
+    scripts=['exrex.py'],
+    py_modules=['exrex'],
     packages=find_packages(exclude=('tests',)),
     install_requires=REQUIRED,
     extras_require=EXTRAS,
