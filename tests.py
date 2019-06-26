@@ -20,6 +20,7 @@
 
 from exrex import generate, count, getone, CATEGORIES, simplify
 import re
+import sre_parse
 from sys import exit, version_info
 IS_PY3 = version_info[0] == 3
 
@@ -44,7 +45,9 @@ RS = {
     '[áíő]': [u'á', u'í', u'ő'],
     '(a|b)(1|2)\\1\\2\\1\\2': ['a1a1a1', 'a2a2a2', 'b1b1b1', 'b2b2b2'],
     '(?=x)': ['x'],
-    '\\da{2}': ['0aa', '1aa', '2aa', '3aa', '4aa', '5aa', '6aa', '7aa', '8aa', '9aa']
+    '\\da{2}': ['0aa', '1aa', '2aa', '3aa', '4aa', '5aa', '6aa', '7aa', '8aa', '9aa'],
+    '\\w': CATEGORIES[sre_parse.CATEGORY_WORD],
+    '\\W': CATEGORIES[sre_parse.CATEGORY_NOT_WORD]
 }
 
 BIGS = [
