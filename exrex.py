@@ -23,7 +23,7 @@ try:
 except:
     pass
 from re import sre_parse, U
-from itertools import tee
+from itertools import tee, chain
 from random import choice, randint
 from types import GeneratorType
 
@@ -47,6 +47,10 @@ __all__ = (
 CATEGORIES = {
     sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE),
     sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS),
+    sre_parse.CATEGORY_WORD: [unichr(x) for x in chain(range(48, 58),
+                                                       range(65, 91),
+                                                       range(95, 96),
+                                                       range(97, 123))],
     'category_any': [unichr(x) for x in range(32, 123)]
 }
 
