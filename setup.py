@@ -9,7 +9,7 @@ from setuptools import find_packages, setup, Command
 NAME = 'exrex'
 DESCRIPTION = 'Irregular methods for regular expressions'
 URL = 'https://github.com/asciimoo/exrex'
-EMAIL = 'asciimoo@gmail.co'
+EMAIL = 'asciimoo@gmail.com'
 AUTHOR = 'Adam Tauber'
 VERSION = '0.10.6'
 
