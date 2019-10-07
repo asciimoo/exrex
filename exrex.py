@@ -22,7 +22,7 @@ try:
     from future_builtins import map, range
 except:
     pass
-from re import sre_parse, U
+from re import match, sre_parse, U
 from itertools import tee
 from random import choice, randint
 from types import GeneratorType
@@ -47,6 +47,10 @@ __all__ = (
 CATEGORIES = {
     sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE),
     sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS),
+    sre_parse.CATEGORY_WORD: [unichr(x) for x in range(256) if
+                              match('\w', unichr(x), U)],
+    sre_parse.CATEGORY_NOT_WORD: [unichr(x) for x in range(256) if
+                                  match('\W', unichr(x), U)],
     'category_any': [unichr(x) for x in range(32, 123)]
 }
 
