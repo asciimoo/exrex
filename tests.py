@@ -18,7 +18,7 @@
 #
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
-from exrex import generate, count, getone, CATEGORIES, simplify
+from exrex import generate, count, getone, CATEGORIES, simplify, has_single_match
 import re
 import sre_parse
 from sys import exit, version_info
@@ -95,6 +95,33 @@ def count_test():
     return 0
 
 
+def has_single_match_test():
+    for regex, result in RS.items():
+        if len(result) == 1:
+            try:
+                assert has_single_match(regex) == True
+            except:
+                if IS_PY3:
+                    print('[E] Assertion error! "%s"\n\t%s not match' %
+                          (regex, s))
+                    return -1
+                else:
+                    print('[E] Assertion error! "%s"\n\t%s not match' %
+                          (regex.decode('utf-8'), s))
+        else:
+            try:
+                assert has_single_match(regex) == False
+            except:
+                if IS_PY3:
+                    print('[E] Assertion error! "%s"\n\t%s not match' %
+                          (regex, s))
+                    return -1
+                else:
+                    print('[E] Assertion error! "%s"\n\t%s not match' %
+                          (regex.decode('utf-8'), s))
+    return 0
+
+
 def getone_test(tries=200):
     for regex, _ in RS.items():
         for _ in range(tries):
@@ -150,7 +177,8 @@ if __name__ == '__main__':
     tests = {'generation': gen_test,
              'count': count_test,
              'random generation': getone_test,
-             'simplification': simplify_test}
+             'simplification': simplify_test,
+             'has_single_match_test': has_single_match_test}
     for i, (test_name, test) in enumerate(tests.items()):
         errors = test()
         if not errors:

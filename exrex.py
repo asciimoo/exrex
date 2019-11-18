@@ -436,6 +436,15 @@ def count(s, limit=20):
     return _gen(parse(s), limit, count=True)
 
 
+def has_single_match(s, limit=3):
+    """Returns true if a only single string can match a regex
+    """
+    if count(s, limit=limit) == 1:
+        return True
+    else:
+        return False
+
+
 def getone(regex_string, limit=20):
     """Returns a random matching string to a given regular expression
     """
