@@ -452,7 +452,7 @@ def argparser():
         help='Output file - default is STDOUT',
         metavar='FILE',
         default=stdout,
-        type=argparse.FileType('w')
+        type=argparse.FileType('w', encoding='utf-8')
     )
     argp.add_argument(
         '-l', '--limit',
