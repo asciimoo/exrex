@@ -25,8 +25,8 @@ from types import GeneratorType
 from re import match, U
 
 IS_PY3 = version_info.major == 3
-IS_PY36_OR_GREATER = version_info[:2] >= (3, 6)
-IS_PY311_OR_GREATER = version_info[:2] >= (3, 11)
+IS_PY36_OR_GREATER = version_info[1] > 5
+IS_PY311_OR_GREATER = version_info[1] > 10
 
 if not IS_PY3:
     from future_builtins import map, range
