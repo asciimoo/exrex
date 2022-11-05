@@ -18,18 +18,24 @@
 #
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
-try:
-    from future_builtins import map, range
-except:
-    pass
-from re import match, sre_parse, U
+from sys import version_info
 from itertools import tee
 from random import choice, randint
 from types import GeneratorType
+from re import match, U
 
-from sys import version_info
-IS_PY3 = version_info[0] == 3
-IS_PY36_OR_GREATER = IS_PY3 and version_info[1] > 5
+IS_PY3 = version_info.major == 3
+IS_PY36_OR_GREATER = version_info[1] > 5
+IS_PY311_OR_GREATER = version_info[1] > 10
+
+if not IS_PY3:
+    from future_builtins import map, range
+
+if IS_PY311_OR_GREATER:
+    import re._parser as sre_parse
+else:
+    from re import sre_parse
+
 
 if IS_PY3:
     unichr = chr
@@ -48,9 +54,9 @@ CATEGORIES = {
     sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE),
     sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS),
     sre_parse.CATEGORY_WORD: [unichr(x) for x in range(256) if
-                              match('\w', unichr(x), U)],
+                              match(r'\w', unichr(x), U)],
     sre_parse.CATEGORY_NOT_WORD: [unichr(x) for x in range(256) if
-                                  match('\W', unichr(x), U)],
+                                  match(r'\W', unichr(x), U)],
     'category_any': [unichr(x) for x in range(32, 123)]
 }
 
@@ -98,7 +104,7 @@ def _in(d):
                 for char in subs:
                     try:
                         ret.remove(char)
-                    except:
+                    except ValueError:
                         pass
             else:
                 ret.extend(subs)
@@ -106,7 +112,7 @@ def _in(d):
             if neg:
                 try:
                     ret.remove(unichr(i[1]))
-                except:
+                except ValueError:
                     pass
             else:
                 ret.append(unichr(i[1]))
@@ -116,7 +122,7 @@ def _in(d):
                 for char in subs:
                     try:
                         ret.remove(char)
-                    except:
+                    except ValueError:
                         pass
             else:
                 ret.extend(subs)
