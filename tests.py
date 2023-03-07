@@ -20,8 +20,12 @@
 
 from exrex import generate, count, getone, CATEGORIES, simplify
 import re
-import sre_parse
+try: 
+    import re._parser as sre_parse
+except ImportError: # Python < 3.11
+    from re import sre_parse
 from sys import exit, version_info
+
 IS_PY3 = version_info[0] == 3
 
 RS = {
