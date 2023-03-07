@@ -12,7 +12,7 @@ DESCRIPTION = 'Irregular methods for regular expressions'
 URL = 'https://github.com/asciimoo/exrex'
 EMAIL = 'asciimoo@gmail.com'
 AUTHOR = 'Adam Tauber'
-VERSION = '0.10.6'
+VERSION = '0.11.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -78,7 +78,7 @@ class UploadCommand(Command):
         self.status('Pushing git tags…')
         os.system('git tag v{0}'.format(about['__version__']))
         os.system('git push --tags')
-        
+
         sys.exit()
 
 
