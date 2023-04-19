@@ -41,6 +41,7 @@ Download = "https://github.com/asciimoo/exrex/tarball/master"
 exrex = "exrex:__main__"
 
 [tool.setuptools]
+package-dir = {"" = "src"}
 py-modules = ["exrex"]
 include-package-data = true
 
