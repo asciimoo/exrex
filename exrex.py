@@ -52,9 +52,9 @@ CATEGORIES = {
     sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE),
     sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS),
     sre_parse.CATEGORY_WORD: [unichr(x) for x in range(256) if
-                              match('\w', unichr(x), U)],
+                              match(r'\w', unichr(x), U)],
     sre_parse.CATEGORY_NOT_WORD: [unichr(x) for x in range(256) if
-                                  match('\W', unichr(x), U)],
+                                  match(r'\W', unichr(x), U)],
     'category_any': [unichr(x) for x in range(32, 123)]
 }
 
