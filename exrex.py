@@ -50,7 +50,11 @@ __all__ = (
 
 CATEGORIES = {
     sre_parse.CATEGORY_SPACE: sorted(sre_parse.WHITESPACE),
+    sre_parse.CATEGORY_NOT_SPACE: [unichr(x) for x in range(256) if
+                                   match(r'\S', unichr(x), U)],
     sre_parse.CATEGORY_DIGIT: sorted(sre_parse.DIGITS),
+    sre_parse.CATEGORY_NOT_DIGIT: [unichr(x) for x in range(256) if
+                                   match(r'\D', unichr(x), U)],
     sre_parse.CATEGORY_WORD: [unichr(x) for x in range(256) if
                               match(r'\w', unichr(x), U)],
     sre_parse.CATEGORY_NOT_WORD: [unichr(x) for x in range(256) if
