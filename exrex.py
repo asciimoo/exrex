@@ -28,7 +28,7 @@ try:
 except ImportError: # Python < 3.11
     from re import sre_parse
 from itertools import tee
-from random import choice, randint
+from random import Random
 from types import GeneratorType
 
 from sys import version_info
@@ -255,34 +255,34 @@ def _gen(d, limit=20, count=False, grouprefs=None):
     return ret
 
 
-def _randone(d, limit=20, grouprefs=None):
+def _randone(d, limit=20, grouprefs=None, rng=Random()):
     if grouprefs is None:
         grouprefs = {}
     """docstring for _randone"""
     ret = ''
     for i in d:
         if i[0] == sre_parse.IN:
-            ret += choice(_in(i[1]))
+            ret += rng.choice(_in(i[1]))
         elif i[0] == sre_parse.LITERAL:
             ret += unichr(i[1])
         elif i[0] == sre_parse.CATEGORY:
-            ret += choice(CATEGORIES.get(i[1], ['']))
+            ret += rng.choice(CATEGORIES.get(i[1], ['']))
         elif i[0] == sre_parse.ANY:
-            ret += choice(CATEGORIES['category_any'])
+            ret += rng.choice(CATEGORIES['category_any'])
         elif i[0] == sre_parse.MAX_REPEAT or i[0] == sre_parse.MIN_REPEAT:
             if i[1][1] + 1 - i[1][0] >= limit:
                 min, max = i[1][0], i[1][0] + limit - 1
             else:
                 min, max = i[1][0], i[1][1]
-            for _ in range(randint(min, max)):
-                ret += _randone(list(i[1][2]), limit, grouprefs)
+            for _ in range(rng.randint(min, max)):
+                ret += _randone(list(i[1][2]), limit, grouprefs, rng)
         elif i[0] == sre_parse.BRANCH:
-            ret += _randone(choice(i[1][1]), limit, grouprefs)
+            ret += _randone(rng.choice(i[1][1]), limit, grouprefs, rng)
         elif i[0] == sre_parse.SUBPATTERN or i[0] == sre_parse.ASSERT:
             subexpr = i[1][1]
             if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
                 subexpr = i[1][3]
-            subp = _randone(subexpr, limit, grouprefs)
+            subp = _randone(subexpr, limit, grouprefs, rng)
             if i[1][0]:
                 grouprefs[i[1][0]] = subp
             ret += subp
@@ -292,7 +292,7 @@ def _randone(d, limit=20, grouprefs=None):
             c = list(CATEGORIES['category_any'])
             if unichr(i[1]) in c:
                 c.remove(unichr(i[1]))
-            ret += choice(c)
+            ret += rng.choice(c)
         elif i[0] == sre_parse.GROUPREF:
             ret += grouprefs[i[1]]
         elif i[0] == sre_parse.ASSERT_NOT:
@@ -444,10 +444,10 @@ def count(s, limit=20):
     return _gen(parse(s), limit, count=True)
 
 
-def getone(regex_string, limit=20):
+def getone(regex_string, limit=20, rng=Random()):
     """Returns a random matching string to a given regular expression
     """
-    return _randone(parse(regex_string), limit)
+    return _randone(parse(regex_string), limit=limit, rng=rng)
 
 
 def argparser():
@@ -508,6 +508,12 @@ def argparser():
         default=False
     )
     argp.add_argument(
+        '--seed',
+        help='RNG seed',
+        default=None,
+        type=int
+    )
+    argp.add_argument(
         'regex',
         metavar='REGEX',
         help='REGEX string'
@@ -527,7 +533,7 @@ def __main__():
         exit(0)
     if args['random']:
         args['output'].write(
-            '%s%s' % (getone(args['regex'], limit=args['limit']), args['delimiter']))
+            '%s%s' % (getone(args['regex'], limit=args['limit'], rng=Random(args['seed'])), args['delimiter']))
         exit(0)
     if args['simplify']:
         args['output'].write(
