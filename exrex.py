@@ -221,10 +221,17 @@ def _gen(d, limit=20, count=False, grouprefs=None):
             subexpr = i[1][1]
             if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
                 subexpr = i[1][3]
-            if count:
-                strings = (
-                    strings or 1) * (sum(ggen([0], _gen, subexpr, limit=limit, count=True, grouprefs=grouprefs)) or 1)
-            ret = ggen(ret, _gen, subexpr, limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
+
+            if len(subexpr) == 0:
+                # for subpattern like ()
+                ret = mappend(ret, '')
+                if count:
+                    strings = strings or 1
+            else:
+                if count:
+                    strings = (
+                        strings or 1) * (sum(ggen([0], _gen, subexpr, limit=limit, count=True, grouprefs=grouprefs)) or 1)
+                ret = ggen(ret, _gen, subexpr, limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
         # ignore ^ and $
         elif i[0] == sre_parse.AT:
             continue

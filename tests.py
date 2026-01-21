@@ -51,7 +51,9 @@ RS = {
     '(?=x)': ['x'],
     '\\da{2}': ['0aa', '1aa', '2aa', '3aa', '4aa', '5aa', '6aa', '7aa', '8aa', '9aa'],
     '\\w': CATEGORIES[sre_parse.CATEGORY_WORD],
-    '\\W': CATEGORIES[sre_parse.CATEGORY_NOT_WORD]
+    '\\W': CATEGORIES[sre_parse.CATEGORY_NOT_WORD],
+    '()': [''],
+    '((\'s)|( is)|())': ['\'s', ' is', '']
 }
 
 BIGS = [
