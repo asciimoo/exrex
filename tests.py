@@ -29,6 +29,12 @@ from sys import exit, version_info
 IS_PY3 = version_info[0] == 3
 
 RS = {
+    '[ab](?:c|de|fg)': ['ac', 'ade', 'afg', 'bc', 'bde', 'bfg'],
+    '[ab](?:c|de)(?:f|gh)': [
+        'acf', 'acgh', 'adef', 'adegh', 'bcf', 'bcgh', 'bdef', 'bdegh'],
+    '[ab]{1,2}(?:c|de)': [
+        prefix + suffix for prefix in ['a', 'b', 'aa', 'ab', 'ba', 'bb']
+        for suffix in ['c', 'de']],
     '(a|b)': ['a', 'b'],
     '[ab][cd]': ['ac', 'ad', 'bc', 'bd'],
     'a|ab': ['a', 'ab'],

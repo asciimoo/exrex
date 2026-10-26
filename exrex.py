@@ -214,8 +214,10 @@ def _gen(d, limit=20, count=False, grouprefs=None):
             ret = prods(ret, ran, items, limit, grouprefs)
         elif i[0] == sre_parse.BRANCH:
             if count:
+                branch_count = 0
                 for x in i[1][1]:
-                    strings += _gen(x, limit, True, grouprefs) or 1
+                    branch_count += _gen(x, limit, True, grouprefs) or 1
+                strings = (strings or 1) * branch_count
             ret = concit(ret, i[1][1], limit, grouprefs)
         elif i[0] == sre_parse.SUBPATTERN or i[0] == sre_parse.ASSERT:
             subexpr = i[1][1]
