@@ -114,6 +114,33 @@ $ exrex '[01]{10}' -c
 
 ```
 
+### Unicode character ranges (Python 3)
+
+Exrex parses patterns with Python's `re` parser. Use `\u` followed by four
+hexadecimal digits for a Unicode character, not the `\x{...}` notation used
+by some other regex engines. Python's `\x` escape accepts exactly two
+hexadecimal digits.
+
+For example, this small range generates U+0100 through U+0102:
+
+```python
+>>> list(exrex.generate(r'[\u0100-\u0102]'))
+['Ā', 'ā', 'Ă']
+```
+
+The equivalent command is:
+
+```bash
+$ exrex '[\u0100-\u0102]'
+Ā
+ā
+Ă
+```
+
+In Python code, the raw string prefix (`r`) preserves the escapes for the regex
+parser. In a POSIX shell, single quotes preserve the backslashes. Printing these
+characters also requires a terminal encoding that supports them.
+
 ### Bugs
 
 Bugs or suggestions? Visit the [issue tracker](https://github.com/asciimoo/exrex/issues).
