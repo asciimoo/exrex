@@ -219,14 +219,20 @@ def _gen(d, limit=20, count=False, grouprefs=None):
                     branch_count += _gen(x, limit, True, grouprefs) or 1
                 strings = (strings or 1) * branch_count
             ret = concit(ret, i[1][1], limit, grouprefs)
-        elif i[0] == sre_parse.SUBPATTERN or i[0] == sre_parse.ASSERT:
+        elif i[0] == sre_parse.SUBPATTERN:
             subexpr = i[1][1]
-            if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
+            if IS_PY36_OR_GREATER:
                 subexpr = i[1][3]
             if count:
                 strings = (
                     strings or 1) * (sum(ggen([0], _gen, subexpr, limit=limit, count=True, grouprefs=grouprefs)) or 1)
             ret = ggen(ret, _gen, subexpr, limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
+        elif i[0] == sre_parse.ASSERT:
+            # zero-width assertions contribute no characters and capture
+            # nothing, so they neither generate content nor multiply the
+            # count (issues #48, #54); generate()/getone() check the final
+            # strings against the original regex
+            continue
         # ignore ^ and $
         elif i[0] == sre_parse.AT:
             continue
@@ -248,7 +254,8 @@ def _gen(d, limit=20, count=False, grouprefs=None):
         if strings == 0 and literal:
             inc = True
             for i in d:
-                if i[0] not in (sre_parse.AT, sre_parse.LITERAL):
+                if i[0] not in (sre_parse.AT, sre_parse.LITERAL,
+                                sre_parse.ASSERT, sre_parse.ASSERT_NOT):
                     inc = False
             if inc:
                 strings = 1
@@ -280,14 +287,17 @@ def _randone(d, limit=20, grouprefs=None):
                 ret += _randone(list(i[1][2]), limit, grouprefs)
         elif i[0] == sre_parse.BRANCH:
             ret += _randone(choice(i[1][1]), limit, grouprefs)
-        elif i[0] == sre_parse.SUBPATTERN or i[0] == sre_parse.ASSERT:
+        elif i[0] == sre_parse.SUBPATTERN:
             subexpr = i[1][1]
-            if IS_PY36_OR_GREATER and i[0] == sre_parse.SUBPATTERN:
+            if IS_PY36_OR_GREATER:
                 subexpr = i[1][3]
             subp = _randone(subexpr, limit, grouprefs)
             if i[1][0]:
                 grouprefs[i[1][0]] = subp
             ret += subp
+        elif i[0] == sre_parse.ASSERT:
+            # zero-width: neither contributes to the string nor captures
+            continue
         elif i[0] == sre_parse.AT:
             continue
         elif i[0] == sre_parse.NOT_LITERAL:
@@ -424,13 +434,17 @@ def parse(s):
 def generate(s, limit=20):
     """Creates a generator that generates all matching strings to a given regular expression
 
+    Zero-width assertions (``(?=...)``, ``(?!...)``, ``(?<=...)``, ``(?<!...)``)
+    cannot be generated on their own, so candidates that fail them are
+    filtered out against the original regex.
+
     :param s: Regular expression
     :type s: str
     :param limit: Range limit
     :type limit: int
     :returns: string generator object
     """
-    return _gen(parse(s), limit)
+    return (x for x in _gen(parse(s), limit) if match(s, x))
 
 
 def count(s, limit=20):
@@ -448,8 +462,16 @@ def count(s, limit=20):
 
 def getone(regex_string, limit=20):
     """Returns a random matching string to a given regular expression
+
+    The candidate is checked against the original regex, and re-sampled
+    (up to 100 attempts) if it fails a zero-width assertion; returns
+    ``None`` if no matching candidate could be generated.
     """
-    return _randone(parse(regex_string), limit)
+    for _ in range(100):
+        s = _randone(parse(regex_string), limit)
+        if match(regex_string, s):
+            return s
+    return None
 
 
 def argparser():

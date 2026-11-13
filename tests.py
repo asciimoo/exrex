@@ -54,7 +54,10 @@ RS = {
     '(as|df)': ['as', 'df'],
     '[áíő]': [u'á', u'í', u'ő'],
     '(a|b)(1|2)\\1\\2\\1\\2': ['a1a1a1', 'a2a2a2', 'b1b1b1', 'b2b2b2'],
-    '(?=x)': ['x'],
+    'a(?=b)b': ['ab'],
+    '(?=a)a': ['a'],
+    '(a)(?=b)b': ['ab'],
+    '(a)(?!x)\\1': ['aa'],
     '\\da{2}': ['0aa', '1aa', '2aa', '3aa', '4aa', '5aa', '6aa', '7aa', '8aa', '9aa'],
     '\\w': CATEGORIES[sre_parse.CATEGORY_WORD],
     '\\W': CATEGORIES[sre_parse.CATEGORY_NOT_WORD]
@@ -73,6 +76,7 @@ BIGS = [
     '^([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+$',
     '^([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+$',
     '^(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M$',
+    '^[1-9][0-9]{3} ?(?!sa|sd|ss)[a-z]{2}$',
     '(.*)\\1'
 ]
 
@@ -110,6 +114,9 @@ def getone_test(tries=200):
         for _ in range(tries):
             try:
                 s = getone(regex)
+                if s is None:
+                    # no matching candidate could be generated
+                    continue
                 if IS_PY3:
                     assert re.match(regex, s, re.U)
                 else:
@@ -127,6 +134,8 @@ def getone_test(tries=200):
         for _ in range(tries):
             try:
                 s = getone(regex)
+                if s is None:
+                    continue
                 if IS_PY3:
                     assert re.match(regex, s, re.U)
                 else:
