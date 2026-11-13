@@ -56,6 +56,9 @@ RS = {
     '(a|b)(1|2)\\1\\2\\1\\2': ['a1a1a1', 'a2a2a2', 'b1b1b1', 'b2b2b2'],
     'a(?=b)b': ['ab'],
     '(?=a)a': ['a'],
+    '(?=ab)[ab]{2}': ['ab'],
+    '(?=a)[ab]': ['a'],
+    '(?=(a))\\1': ['a'],
     '(a)(?=b)b': ['ab'],
     '(a)(?!x)\\1': ['aa'],
     '\\da{2}': ['0aa', '1aa', '2aa', '3aa', '4aa', '5aa', '6aa', '7aa', '8aa', '9aa'],
@@ -115,8 +118,9 @@ def getone_test(tries=200):
             try:
                 s = getone(regex)
                 if s is None:
-                    # no matching candidate could be generated
-                    continue
+                    print('[E] Assertion error! "%s"\n\tgetone() returned '
+                          'None for a satisfiable expression' % regex)
+                    return -1
                 if IS_PY3:
                     assert re.match(regex, s, re.U)
                 else:
@@ -135,7 +139,9 @@ def getone_test(tries=200):
             try:
                 s = getone(regex)
                 if s is None:
-                    continue
+                    print('[E] Assertion error! "%s"\n\tgetone() returned '
+                          'None for a satisfiable expression' % regex)
+                    return -1
                 if IS_PY3:
                     assert re.match(regex, s, re.U)
                 else:
@@ -149,6 +155,27 @@ def getone_test(tries=200):
                     print('[E] Assertion error! "%s"\n\t%s not match' %
                           (regex.decode('utf-8'), s))
                     return -1
+    return 0
+
+
+def lookahead_test(tries=20):
+    # zero-width lookaheads can be unlikely under blind sampling; getone()
+    # must still return a matching string instead of None
+    for regex in [r'^(?=ca)([a-z]{4})$', r'(?=ab)[ab]{2}', r'^(?=foo)(foo|x)+$']:
+        for _ in range(tries):
+            s = getone(regex)
+            if s is None:
+                print('[E] Assertion error! "%s"\n\tgetone() returned None '
+                      'for a satisfiable expression' % regex)
+                return -1
+            if IS_PY3 and not re.match(regex, s, re.U):
+                print('[E] Assertion error! "%s"\n\t%s not match'
+                      % (regex, s))
+                return -1
+            elif not IS_PY3 and not re.match(regex, s.encode('utf-8'), re.U):
+                print('[E] Assertion error! "%s"\n\t%s not match'
+                      % (regex.decode('utf-8'), s))
+                return -1
     return 0
 
 
@@ -169,6 +196,7 @@ if __name__ == '__main__':
     tests = {'generation': gen_test,
              'count': count_test,
              'random generation': getone_test,
+             'lookahead random generation': lookahead_test,
              'simplification': simplify_test}
     for i, (test_name, test) in enumerate(tests.items()):
         errors = test()
