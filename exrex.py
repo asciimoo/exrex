@@ -93,6 +93,11 @@ def mappend(g, c):
 
 def dappend(g, d, k):
     for cc in g:
+        if k not in d:
+            # a backreference to a group that has not participated in the
+            # match (e.g. one captured only inside a negative lookahead)
+            # can never match
+            return
         yield cc + d[k]
 
 
@@ -134,6 +139,49 @@ def _in(d):
     return ret
 
 
+def _subexpr(i):
+    subexpr = i[1][1]
+    if IS_PY36_OR_GREATER:
+        subexpr = i[1][3]
+    return subexpr
+
+
+def _capturing_groups(d):
+    """Numbers of all capturing groups appearing anywhere in a parsed tree"""
+    groups = set()
+    for i in d:
+        if i[0] == sre_parse.SUBPATTERN:
+            if i[1][0]:
+                groups.add(i[1][0])
+            groups |= _capturing_groups(_subexpr(i))
+        elif i[0] == sre_parse.BRANCH:
+            for sub in i[1][1]:
+                groups |= _capturing_groups(sub)
+        elif i[0] == sre_parse.MAX_REPEAT or i[0] == sre_parse.MIN_REPEAT:
+            groups |= _capturing_groups(list(i[1][2]))
+        elif i[0] == sre_parse.ASSERT or i[0] == sre_parse.ASSERT_NOT:
+            groups |= _capturing_groups(i[1][1])
+    return groups
+
+
+def _referenced_groups(d):
+    """Numbers of all groups referenced by backreferences in a parsed tree"""
+    groups = set()
+    for i in d:
+        if i[0] == sre_parse.GROUPREF:
+            groups.add(i[1])
+        elif i[0] == sre_parse.SUBPATTERN:
+            groups |= _referenced_groups(_subexpr(i))
+        elif i[0] == sre_parse.BRANCH:
+            for sub in i[1][1]:
+                groups |= _referenced_groups(sub)
+        elif i[0] == sre_parse.MAX_REPEAT or i[0] == sre_parse.MIN_REPEAT:
+            groups |= _referenced_groups(list(i[1][2]))
+        elif i[0] == sre_parse.ASSERT or i[0] == sre_parse.ASSERT_NOT:
+            groups |= _referenced_groups(i[1][1])
+    return groups
+
+
 def prods(orig, ran, items, limit, grouprefs):
     for o in orig:
         for r in ran:
@@ -157,10 +205,22 @@ def ggen(g1, f, *args, **kwargs):
         g2 = f(*args, **kwargs)
         if isinstance(g2, GeneratorType):
             for b in g2:
-                grouprefs[groupref] = b
+                if groupref is not None:
+                    grouprefs[groupref] = b
                 yield a + b
         else:
             yield g2
+
+
+def ggen_assert(g1, f, *args, **kwargs):
+    """Zero-width variant of ggen(): re-run the assertion content once per
+    prefix and yield the prefix unchanged for every string the content
+    generates, discarding the content's characters while keeping its group
+    capture side effects, so a later backreference replays the value
+    captured for the current branch (e.g. (?=([ab]))\\1 -> 'a', 'b')"""
+    for a in g1:
+        for _b in f(*args, **kwargs):
+            yield a
 
 
 def concit(g1, seqs, limit, grouprefs):
@@ -177,7 +237,7 @@ def _gen(d, limit=20, count=False, grouprefs=None):
     ret = ['']
     strings = 0
     literal = False
-    for i in d:
+    for idx, i in enumerate(d):
         if i[0] == sre_parse.IN:
             subs = _in(i[1])
             if count:
@@ -227,14 +287,37 @@ def _gen(d, limit=20, count=False, grouprefs=None):
                 strings = (
                     strings or 1) * (sum(ggen([0], _gen, subexpr, limit=limit, count=True, grouprefs=grouprefs)) or 1)
             ret = ggen(ret, _gen, subexpr, limit=limit, count=False, grouprefs=grouprefs, groupref=i[1][0])
-        elif i[0] == sre_parse.ASSERT or i[0] == sre_parse.ASSERT_NOT:
-            # zero-width assertions neither contribute characters nor
-            # multiply the count, but their content can contain capturing
-            # groups referenced by later backreferences (e.g. (?=(a))\1), so
-            # generate it once for its grouprefs side effects (issues #48,
-            # #54); generate()/getone() check the final strings against the
-            # original regex
-            list(_gen(i[1][1], limit, grouprefs=grouprefs))
+        elif i[0] == sre_parse.ASSERT:
+            # zero-width assertion: it contributes no characters on its
+            # own. A trailing lookahead (e.g. a(?=b)) still emits its
+            # content so a concrete string is produced; a lookahead whose
+            # captures are referenced later (e.g. (?=([ab]))\1) threads
+            # each capture binding into the continuation without emitting
+            # the assertion's characters, so backreferences replay the
+            # value captured for the current branch; otherwise the content
+            # is skipped entirely (issues #48, #54). generate()/count()/
+            # getone() check candidates against the original regex
+            subexpr = i[1][1]
+            if idx == len(d) - 1 and len(subexpr):
+                if count:
+                    strings = (strings or 1) * (
+                        sum(ggen([0], _gen, subexpr, limit=limit,
+                                 count=True, grouprefs=grouprefs)) or 1)
+                ret = concit(ret, [subexpr], limit, grouprefs)
+            elif _capturing_groups(subexpr) & _referenced_groups(
+                    d[idx + 1:]):
+                if count:
+                    strings = (strings or 1) * (
+                        sum(ggen([0], _gen, subexpr, limit=limit,
+                                 count=True, grouprefs=grouprefs)) or 1)
+                ret = ggen_assert(ret, _gen, subexpr,
+                                  limit=limit, grouprefs=grouprefs)
+        elif i[0] == sre_parse.ASSERT_NOT:
+            # negative assertions are satisfied without consuming anything
+            # and their captures are never visible to the rest of the
+            # pattern, so the content is skipped entirely; a backreference
+            # to such a group never matches (handled in dappend)
+            pass
         # ignore ^ and $
         elif i[0] == sre_parse.AT:
             continue
@@ -468,6 +551,14 @@ def generate(s, limit=20):
     return (x for x in _gen(parse(s), limit) if match(s, x))
 
 
+def _first_lookahead(d):
+    """Content of the first top-level positive lookahead in a parsed tree"""
+    for i in d:
+        if i[0] == sre_parse.ASSERT and i[1][0] == 1:
+            return i[1][1]
+    return None
+
+
 def count(s, limit=20):
     """Counts all matching strings to a given regular expression
 
@@ -482,15 +573,15 @@ def count(s, limit=20):
     if not _has_assertions(d):
         return _gen(d, limit, count=True)
     # With assertions the branch-count formula ignores the constraint, so
-    # enumerate the matching candidates exactly (bounded by the range limit
-    # and a candidate budget) to stay consistent with generate(); if the
-    # space is too large to enumerate cheaply, fall back to the branch-count
-    # estimate
+    # enumerate the matching candidates exactly to stay consistent with
+    # generate(); candidate spaces too large to enumerate cheaply (over a
+    # million candidates) fall back to the branch-count estimate, which
+    # ignores the assertion constraints and can overcount
     total = 0
     for seen, x in enumerate(_gen(d, limit), 1):
         if match(s, x):
             total += 1
-        if seen >= 500000:
+        if seen >= 1000000:
             return _gen(d, limit, count=True)
     return total
 
@@ -500,19 +591,33 @@ def getone(regex_string, limit=20):
 
     Random candidates are checked against the original regex; if a candidate
     fails a zero-width assertion, up to 100 candidates are re-sampled. For
-    patterns where sampling rarely satisfies an assertion (e.g.
-    ``^(?=ca)([a-z]{4})$``), a bounded sample of the matching candidates is
-    enumerated and one is picked at random instead. ``None`` is only returned
-    if no matching candidate could be generated.
+    patterns where sampling rarely satisfies a lookahead (e.g.
+    ``^(?=zzzzz)[a-z]{5}$``), candidates seeded from the lookahead's content
+    are tried next, and a bounded sample of the matching candidates is
+    enumerated as a last resort. ``None`` is only returned if no matching
+    candidate could be generated.
     """
     d = parse(regex_string)
     for _ in range(100):
         s = _randone(d, limit)
         if match(regex_string, s):
             return s
-    # Re-sampling can miss low-probability assertions, so fall back to
-    # sampling the matching candidates of the (unfiltered) generator; the
-    # candidate budget keeps huge candidate spaces from hanging this call
+    if _has_assertions(d):
+        # rare lookaheads are unlikely under blind sampling; overlay the
+        # lookahead's content on a random candidate so e.g.
+        # ^(?=zzzzz)[a-z]{5}$ can be satisfied without enumerating the
+        # whole candidate space
+        lookahead = _first_lookahead(d)
+        if lookahead is not None:
+            for _ in range(100):
+                c = _randone(lookahead, limit)
+                r = _randone(d, limit)
+                s = c + r[len(c):]
+                if match(regex_string, s):
+                    return s
+    # Re-sampling can still miss, so fall back to sampling the matching
+    # candidates of the (unfiltered) generator; the candidate budget keeps
+    # huge candidate spaces from hanging this call
     pool = []
     for seen, s in enumerate(_gen(d, limit), 1):
         if match(regex_string, s):

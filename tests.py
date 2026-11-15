@@ -61,6 +61,11 @@ RS = {
     '(?=(a))\\1': ['a'],
     '(a)(?=b)b': ['ab'],
     '(a)(?!x)\\1': ['aa'],
+    'a(?![ab]{22})': ['a'],
+    '(a)(?!\\1)b': ['ab'],
+    '(?=([ab]))\\1': ['a', 'b'],
+    '(?=([ab]))[ab]\\1': ['aa', 'bb'],
+    'a(?=b)': ['ab'],
     '\\da{2}': ['0aa', '1aa', '2aa', '3aa', '4aa', '5aa', '6aa', '7aa', '8aa', '9aa'],
     '\\w': CATEGORIES[sre_parse.CATEGORY_WORD],
     '\\W': CATEGORIES[sre_parse.CATEGORY_NOT_WORD]
@@ -109,6 +114,24 @@ def count_test():
                 print('[E] Assertion error! "%s"\n\t%d != %d' %
                       (regex.decode('utf-8'), c, l))
                 return -1
+    return 0
+
+
+def count_consistency_test():
+    # count() must agree with generate() on assertion patterns; the
+    # branch-count formula ignores the assertion constraint, so the
+    # matching candidates are enumerated exactly instead.
+    # r'^(?=a)[ab]{19}$' has 524288 candidates; the enumeration must
+    # not give up on them (it used to fall back to the formula, which
+    # overcounted 524288 vs 262144 generated strings)
+    for regex, expected in [(r'^(?=a)[ab]{10}$', 512),
+                            (r'^(?=a)[ab]{19}$', 262144)]:
+        c = count(regex)
+        l = len(list(generate(regex)))
+        if c != l or c != expected:
+            print('[E] Assertion error! "%s"\n\tcount=%d != %d (expected %d)'
+                  % (regex, c, l, expected))
+            return -1
     return 0
 
 
@@ -161,7 +184,8 @@ def getone_test(tries=200):
 def lookahead_test(tries=20):
     # zero-width lookaheads can be unlikely under blind sampling; getone()
     # must still return a matching string instead of None
-    for regex in [r'^(?=ca)([a-z]{4})$', r'(?=ab)[ab]{2}', r'^(?=foo)(foo|x)+$']:
+    for regex in [r'^(?=ca)([a-z]{4})$', r'(?=ab)[ab]{2}',
+                 r'^(?=foo)(foo|x)+$', r'^(?=zzzzz)[a-z]{5}$']:
         for _ in range(tries):
             s = getone(regex)
             if s is None:
@@ -196,6 +220,7 @@ if __name__ == '__main__':
     tests = {'generation': gen_test,
              'count': count_test,
              'random generation': getone_test,
+             'count consistency': count_consistency_test,
              'lookahead random generation': lookahead_test,
              'simplification': simplify_test}
     for i, (test_name, test) in enumerate(tests.items()):
