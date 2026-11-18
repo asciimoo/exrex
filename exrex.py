@@ -338,7 +338,10 @@ def sre_to_string(sre_obj, paren=True):
             else:
                 prefix = '?:'
             branch = '|'.join(parts)
-            if paren:
+            # The enclosing parentheses may only be omitted when the branch
+            # is the whole sequence; otherwise the alternation would also
+            # swallow its sibling items (e.g. a common prefix).
+            if paren or len(sre_obj) > 1:
                 ret += '({0}{1})'.format(prefix, branch)
             else:
                 ret += '{0}'.format(branch)
