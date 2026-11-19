@@ -54,7 +54,18 @@ RS = {
     '(as|df)': ['as', 'df'],
     '[áíő]': [u'á', u'í', u'ő'],
     '(a|b)(1|2)\\1\\2\\1\\2': ['a1a1a1', 'a2a2a2', 'b1b1b1', 'b2b2b2'],
-    '(?=x)': ['x'],
+    'a(?=b)b': ['ab'],
+    '(?=a)a': ['a'],
+    '(?=ab)[ab]{2}': ['ab'],
+    '(?=a)[ab]': ['a'],
+    '(?=(a))\\1': ['a'],
+    '(a)(?=b)b': ['ab'],
+    '(a)(?!x)\\1': ['aa'],
+    'a(?![ab]{22})': ['a'],
+    '(a)(?!\\1)b': ['ab'],
+    '(?=([ab]))\\1': ['a', 'b'],
+    '(?=([ab]))[ab]\\1': ['aa', 'bb'],
+    'a(?=b)': ['ab'],
     '\\da{2}': ['0aa', '1aa', '2aa', '3aa', '4aa', '5aa', '6aa', '7aa', '8aa', '9aa'],
     '\\w': CATEGORIES[sre_parse.CATEGORY_WORD],
     '\\W': CATEGORIES[sre_parse.CATEGORY_NOT_WORD]
@@ -73,6 +84,7 @@ BIGS = [
     '^([^0-9]{2,}|(a|s|d|f|g)+|[a-z]+)+$',
     '^([^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]|asdf)+$',
     '^(1[0-2]|0[1-9])(:[0-5]\d){2} (A|P)M$',
+    '^[1-9][0-9]{3} ?(?!sa|sd|ss)[a-z]{2}$',
     '(.*)\\1'
 ]
 
@@ -105,11 +117,33 @@ def count_test():
     return 0
 
 
+def count_consistency_test():
+    # count() must agree with generate() on assertion patterns; the
+    # branch-count formula ignores the assertion constraint, so the
+    # matching candidates are enumerated exactly instead.
+    # r'^(?=a)[ab]{19}$' has 524288 candidates; the enumeration must
+    # not give up on them (it used to fall back to the formula, which
+    # overcounted 524288 vs 262144 generated strings)
+    for regex, expected in [(r'^(?=a)[ab]{10}$', 512),
+                            (r'^(?=a)[ab]{19}$', 262144)]:
+        c = count(regex)
+        l = len(list(generate(regex)))
+        if c != l or c != expected:
+            print('[E] Assertion error! "%s"\n\tcount=%d != %d (expected %d)'
+                  % (regex, c, l, expected))
+            return -1
+    return 0
+
+
 def getone_test(tries=200):
     for regex, _ in RS.items():
         for _ in range(tries):
             try:
                 s = getone(regex)
+                if s is None:
+                    print('[E] Assertion error! "%s"\n\tgetone() returned '
+                          'None for a satisfiable expression' % regex)
+                    return -1
                 if IS_PY3:
                     assert re.match(regex, s, re.U)
                 else:
@@ -127,6 +161,10 @@ def getone_test(tries=200):
         for _ in range(tries):
             try:
                 s = getone(regex)
+                if s is None:
+                    print('[E] Assertion error! "%s"\n\tgetone() returned '
+                          'None for a satisfiable expression' % regex)
+                    return -1
                 if IS_PY3:
                     assert re.match(regex, s, re.U)
                 else:
@@ -140,6 +178,28 @@ def getone_test(tries=200):
                     print('[E] Assertion error! "%s"\n\t%s not match' %
                           (regex.decode('utf-8'), s))
                     return -1
+    return 0
+
+
+def lookahead_test(tries=20):
+    # zero-width lookaheads can be unlikely under blind sampling; getone()
+    # must still return a matching string instead of None
+    for regex in [r'^(?=ca)([a-z]{4})$', r'(?=ab)[ab]{2}',
+                 r'^(?=foo)(foo|x)+$', r'^(?=zzzzz)[a-z]{5}$']:
+        for _ in range(tries):
+            s = getone(regex)
+            if s is None:
+                print('[E] Assertion error! "%s"\n\tgetone() returned None '
+                      'for a satisfiable expression' % regex)
+                return -1
+            if IS_PY3 and not re.match(regex, s, re.U):
+                print('[E] Assertion error! "%s"\n\t%s not match'
+                      % (regex, s))
+                return -1
+            elif not IS_PY3 and not re.match(regex, s.encode('utf-8'), re.U):
+                print('[E] Assertion error! "%s"\n\t%s not match'
+                      % (regex.decode('utf-8'), s))
+                return -1
     return 0
 
 
@@ -160,6 +220,8 @@ if __name__ == '__main__':
     tests = {'generation': gen_test,
              'count': count_test,
              'random generation': getone_test,
+             'count consistency': count_consistency_test,
+             'lookahead random generation': lookahead_test,
              'simplification': simplify_test}
     for i, (test_name, test) in enumerate(tests.items()):
         errors = test()
