@@ -543,15 +543,17 @@ def __main__():
     except Exception as e:
         stderr.write('[!] Error: %s\n' % e)
         exit(1)
-    args['output'].write(next(g))
-    args['max_number'] -= 1
+    if args['max_number'] == 0:
+        return
+    separator = ''
     for s in g:
+        args['output'].write(separator)
+        args['output'].write(s)
+        separator = args['delimiter']
+        args['max_number'] -= 1
         if args['max_number'] == 0:
             break
-        args['max_number'] -= 1
-        args['output'].write(args['delimiter'])
-        args['output'].write(s)
-    if args['delimiter'] == '\n':
+    if separator == '\n':
         args['output'].write('\n')
 
 
