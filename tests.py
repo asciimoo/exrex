@@ -19,12 +19,14 @@
 # (C) 2012- by Adam Tauber, <asciimoo@gmail.com>
 
 from exrex import generate, count, getone, CATEGORIES, simplify
+from os.path import dirname, join
+from subprocess import Popen, PIPE
 import re
 try: 
     import re._parser as sre_parse
 except ImportError: # Python < 3.11
     from re import sre_parse
-from sys import exit, version_info
+from sys import executable, exit, version_info
 
 IS_PY3 = version_info[0] == 3
 
@@ -156,11 +158,47 @@ def simplify_test():
             return -1
 
 
+def cli_test():
+    if version_info < (3, 4):
+        # The CLI's FileType(encoding=...) requires Python 3.4 (#66).
+        print('[S] Command-line tests require Python 3.4 or newer')
+        return 0
+    cases = [
+        (['-m', '0', '[ab]'], ''),
+        ([r'[^\s\S]'], ''),
+        (['[ab]'], 'a\nb\n'),
+        (['-m', '-1', '[ab]'], 'a\nb\n'),
+        (['-m', '1', '[ab]'], 'a\n'),
+        (['-m', '2', '[ab]'], 'a\nb\n'),
+        (['-m', '3', '[ab]'], 'a\nb\n'),
+        (['-m', str(2 ** 64), '[ab]'], 'a\nb\n'),
+        (['-d', '|', '[ab]'], 'a|b'),
+        (['-d', '|', '-m', '0', '[ab]'], ''),
+        (['-d', '|', '-m', '1', '[ab]'], 'a'),
+        (['-d', '|', r'[^\s\S]'], ''),
+        (['a{0}'], '\n'),
+        (['-d', '|', 'a{0}'], ''),
+        (['[ab]{0,1}'], '\na\nb\n'),
+        (['-m', '1', '[ab]{0,1}'], '\n'),
+    ]
+    errors = 0
+    for args, expected in cases:
+        command = [executable, join(dirname(__file__), 'exrex.py')] + args
+        process = Popen(command, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        if process.returncode or stdout != expected.encode('utf-8') or stderr:
+            print('[E] CLI error! %r\n\tstatus=%r stdout=%r stderr=%r' %
+                  (args, process.returncode, stdout, stderr))
+            errors += 1
+    return errors
+
+
 if __name__ == '__main__':
     tests = {'generation': gen_test,
              'count': count_test,
              'random generation': getone_test,
-             'simplification': simplify_test}
+             'simplification': simplify_test,
+             'command line': cli_test}
     for i, (test_name, test) in enumerate(tests.items()):
         errors = test()
         if not errors:
