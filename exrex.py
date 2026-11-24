@@ -305,6 +305,25 @@ def _randone(d, limit=20, grouprefs=None):
     return ret
 
 
+def _is_atom(sre_obj):
+    """True if a quantifier can directly follow the string of sre_obj"""
+    if len(sre_obj) != 1:
+        return False
+    op, av = sre_obj[0]
+    if op in (sre_parse.MAX_REPEAT, sre_parse.MIN_REPEAT):
+        return False
+    if op == sre_parse.SUBPATTERN and not av[0]:
+        return _is_atom(av[3] if IS_PY36_OR_GREATER else av[1])
+    return True
+
+
+def _repeated(sre_obj):
+    ret = sre_to_string(sre_obj)
+    if _is_atom(sre_obj):
+        return ret
+    return '(?:{0})'.format(ret)
+
+
 def sre_to_string(sre_obj, paren=True):
     """sre_parse object to string
 
@@ -365,7 +384,7 @@ def sre_to_string(sre_obj, paren=True):
                     range_str = '+'
                 else:
                     range_str = '{{{0},{1}}}'.format(i[1][0], i[1][1])
-            ret += sre_to_string(i[1][2], paren=paren) + range_str
+            ret += _repeated(i[1][2]) + range_str
         elif i[0] == sre_parse.MIN_REPEAT:
             if i[1][0] == 0 and i[1][1] == sre_parse.MAXREPEAT:
                 range_str = '*?'
@@ -375,7 +394,7 @@ def sre_to_string(sre_obj, paren=True):
                 range_str = '{{{0},}}?'.format(i[1][0])
             else:
                 range_str = '{{{0},{1}}}?'.format(i[1][0], i[1][1])
-            ret += sre_to_string(i[1][2], paren=paren) + range_str
+            ret += _repeated(i[1][2]) + range_str
         elif i[0] == sre_parse.GROUPREF:
             ret += '\\{0}'.format(i[1])
         elif i[0] == sre_parse.AT:
