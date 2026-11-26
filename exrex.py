@@ -305,6 +305,43 @@ def _randone(d, limit=20, grouprefs=None):
     return ret
 
 
+def _is_atom(sre_obj):
+    """True if a quantifier can directly follow the string of sre_obj"""
+    if len(sre_obj) != 1:
+        return False
+    op, av = sre_obj[0]
+    if op in (sre_parse.MAX_REPEAT, sre_parse.MIN_REPEAT):
+        return False
+    if op == sre_parse.SUBPATTERN and not av[0]:
+        return _is_atom(av[3] if IS_PY36_OR_GREATER else av[1])
+    return True
+
+
+def _repeated(sre_obj):
+    ret = sre_to_string(sre_obj)
+    if _is_atom(sre_obj):
+        return ret
+    return '(?:{0})'.format(ret)
+
+
+def _class_char(code):
+    u = unichr(code)
+    return '\\{0}'.format(u) if u in '\\]^-[' else u
+
+
+def _class_to_string(items):
+    """String of the items of a character class without the negation"""
+    ret = u''
+    for op, av in items:
+        if op == sre_parse.LITERAL:
+            ret += _class_char(av)
+        elif op == sre_parse.RANGE:
+            ret += '{0}-{1}'.format(_class_char(av[0]), _class_char(av[1]))
+        elif op == sre_parse.CATEGORY:
+            ret += REVERSE_CATEGORIES[av]
+    return ret
+
+
 def sre_to_string(sre_obj, paren=True):
     """sre_parse object to string
 
@@ -318,7 +355,7 @@ def sre_to_string(sre_obj, paren=True):
             prefix = ''
             if len(i[1]) and i[1][0][0] == sre_parse.NEGATE:
                 prefix = '^'
-            ret += u'[{0}{1}]'.format(prefix, sre_to_string(i[1], paren=paren))
+            ret += u'[{0}{1}]'.format(prefix, _class_to_string(i[1]))
         elif i[0] == sre_parse.LITERAL:
             u = unichr(i[1])
             ret += u if u not in sre_parse.SPECIAL_CHARS else '\\{0}'.format(u)
@@ -354,7 +391,7 @@ def sre_to_string(sre_obj, paren=True):
             else:
                 ret += '{0}'.format(sre_to_string(subexpr, paren=paren))
         elif i[0] == sre_parse.NOT_LITERAL:
-            ret += '[^{0}]'.format(unichr(i[1]))
+            ret += '[^{0}]'.format(_class_char(i[1]))
         elif i[0] == sre_parse.MAX_REPEAT:
             if i[1][0] == i[1][1]:
                 range_str = '{{{0}}}'.format(i[1][0])
@@ -365,7 +402,7 @@ def sre_to_string(sre_obj, paren=True):
                     range_str = '+'
                 else:
                     range_str = '{{{0},{1}}}'.format(i[1][0], i[1][1])
-            ret += sre_to_string(i[1][2], paren=paren) + range_str
+            ret += _repeated(i[1][2]) + range_str
         elif i[0] == sre_parse.MIN_REPEAT:
             if i[1][0] == 0 and i[1][1] == sre_parse.MAXREPEAT:
                 range_str = '*?'
@@ -375,7 +412,7 @@ def sre_to_string(sre_obj, paren=True):
                 range_str = '{{{0},}}?'.format(i[1][0])
             else:
                 range_str = '{{{0},{1}}}?'.format(i[1][0], i[1][1])
-            ret += sre_to_string(i[1][2], paren=paren) + range_str
+            ret += _repeated(i[1][2]) + range_str
         elif i[0] == sre_parse.GROUPREF:
             ret += '\\{0}'.format(i[1])
         elif i[0] == sre_parse.AT:
@@ -383,10 +420,6 @@ def sre_to_string(sre_obj, paren=True):
                 ret += '^'
             elif i[1] == sre_parse.AT_END:
                 ret += '$'
-        elif i[0] == sre_parse.NEGATE:
-            pass
-        elif i[0] == sre_parse.RANGE:
-            ret += '{0}-{1}'.format(unichr(i[1][0]), unichr(i[1][1]))
         elif i[0] == sre_parse.ASSERT:
             if i[1][0]:
                 ret += '(?={0})'.format(sre_to_string(i[1][1], paren=False))
